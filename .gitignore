@@ -75,8 +75,8 @@ docs/.doctrees/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# pyenv
-.python-version
+# pyenv (keep for local development reference)
+# .python-version
 
 # Backup files
 *.bak
