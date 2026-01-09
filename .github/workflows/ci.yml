@@ -31,7 +31,10 @@ jobs:
     - name: Run linter
       run: |
         pip install flake8 black
+        # Run flake8 with specific error codes (critical errors only)
+        # Using --select to override .flake8 config and avoid parsing errors
         flake8 my_rdbms/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Check code formatting with black
         black --check my_rdbms/ tests/
     
     - name: Run tests
