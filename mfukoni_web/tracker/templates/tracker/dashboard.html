@@ -1,0 +1,273 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Dashboard - Mfukoni{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-white mb-2">Financial Overview</h1>
+            <p class="text-muted">Track your income, expenses, and balance at a glance</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'tracker:add_transaction' %}" class="btn btn-gradient shadow">
+                <i class="bi bi-plus-circle"></i> Add Transaction
+            </a>
+        </div>
+    </div>
+    
+    <!-- First-Time User Guidance -->
+    {% if not summary.transaction_count %}
+        <div class="alert alert-info mb-4 border-0 shadow-lg" style="background: rgba(36, 151, 249, 0.15); border-left: 4px solid var(--blue) !important; color: var(--white);">
+            <div class="d-flex align-items-start gap-3">
+                <div class="flex-shrink-0">
+                    <i class="bi bi-info-circle-fill fs-2" style="color: var(--blue);"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-2">
+                        <i class="bi bi-hand-thumbs-up me-2" style="color: var(--blue);"></i>Welcome to Mfukoni
+                    </h5>
+                    <p class="mb-2">Before you can track your money, you need to create your own categories.</p>
+                    <p class="mb-3"><strong>Why?</strong> Everyone's life and spending is different. You decide how to organize your money.</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'tracker:category_list' %}" class="btn btn-gradient">
+                            <i class="bi bi-plus-circle"></i> Create Your First Category
+                        </a>
+                        <button type="button" class="btn btn-outline-light" data-bs-toggle="collapse" data-bs-target="#examplesHelp">
+                            <i class="bi bi-question-circle"></i> See Examples
+                        </button>
+                    </div>
+                    <div class="collapse mt-3" id="examplesHelp">
+                        <div class="card" style="background: var(--popup); border: 1px solid var(--blue);">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-white mb-2">Category Examples:</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong class="text-white">Income Examples:</strong>
+                                        <ul class="text-muted small mb-0">
+                                            <li>Milk Sales</li>
+                                            <li>Maize Farming</li>
+                                            <li>Poultry Sales</li>
+                                            <li>Salary</li>
+                                            <li>Freelance Work</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong class="text-white">Expense Examples:</strong>
+                                        <ul class="text-muted small mb-0">
+                                            <li>Dairy Feed</li>
+                                            <li>Household Food</li>
+                                            <li>Transport</li>
+                                            <li>School Fees</li>
+                                            <li>Emergency Fund</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Quick Add Widget -->
+    <div class="card shadow-lg mb-4 border-0 card-hover">
+        <div class="card-header border-0 py-3" style="background: var(--popup);">
+            <h5 class="fw-bold text-white mb-0">
+                <i class="bi bi-lightning-charge-fill" style="color: var(--blue);"></i> Quick Add Transaction
+            </h5>
+        </div>
+        <div class="card-body p-3">
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'tracker:add_transaction' %}?type=income&category=Salary" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-briefcase-fill"></i> Salary
+                        </a>
+                        <a href="{% url 'tracker:add_transaction' %}?type=income&category=Investment" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-graph-up-arrow"></i> Investment
+                        </a>
+                        <a href="{% url 'tracker:add_transaction' %}?type=income&category=Freelance" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-laptop"></i> Freelance
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'tracker:add_transaction' %}?type=expense&category=Food" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-cup-hot-fill"></i> Food
+                        </a>
+                        <a href="{% url 'tracker:add_transaction' %}?type=expense&category=Transport" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-car-front-fill"></i> Transport
+                        </a>
+                        <a href="{% url 'tracker:add_transaction' %}?type=expense&category=Bills" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-receipt"></i> Bills
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card stat-income shadow-lg card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div style="background: rgba(41, 189, 152, 0.15); padding: 0.875rem; border-radius: 12px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrow-up-circle-fill" style="color: var(--green); font-size: 1.75rem;"></i>
+                        </div>
+                        <span class="badge" style="background: rgba(41, 189, 152, 0.2); color: var(--green); border: 1px solid rgba(41, 189, 152, 0.3);">INCOME</span>
+                    </div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-2">Total Income</h6>
+                    <h2 class="fw-bold mb-1" style="color: var(--green);">KES {{ summary.total_income|floatformat:2 }}</h2>
+                    <p class="text-muted small mb-0">{{ summary.transaction_count }} total transactions</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card stat-card stat-expense shadow-lg card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div style="background: rgba(70, 110, 138, 0.15); padding: 0.875rem; border-radius: 12px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrow-down-circle-fill" style="color: var(--dark-gray); font-size: 1.75rem;"></i>
+                        </div>
+                        <span class="badge" style="background: rgba(70, 110, 138, 0.2); color: var(--light-gray); border: 1px solid rgba(70, 110, 138, 0.3);">EXPENSE</span>
+                    </div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-2">Total Expenses</h6>
+                    <h2 class="fw-bold mb-1" style="color: var(--light-gray);">KES {{ summary.total_expenses|floatformat:2 }}</h2>
+                    <p class="text-muted small mb-0">Tracked expenses</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card stat-card stat-balance shadow-lg card-hover h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div style="background: rgba(36, 151, 249, 0.15); padding: 0.875rem; border-radius: 12px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-wallet2-fill" style="color: var(--blue); font-size: 1.75rem;"></i>
+                        </div>
+                        <span class="badge {% if summary.balance >= 0 %}" style="background: rgba(41, 189, 152, 0.2); color: var(--green); border: 1px solid rgba(41, 189, 152, 0.3);"{% else %}" style="background: rgba(70, 110, 138, 0.2); color: var(--light-gray); border: 1px solid rgba(70, 110, 138, 0.3);"{% endif %}>
+                            {% if summary.balance >= 0 %}POSITIVE{% else %}NEGATIVE{% endif %}
+                        </span>
+                    </div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-2">Balance</h6>
+                    <h2 class="fw-bold mb-1" style="color: {% if summary.balance >= 0 %}var(--green){% else %}var(--light-gray){% endif %};">
+                        KES {{ summary.balance|floatformat:2 }}
+                    </h2>
+                    <p class="text-muted small mb-0">Current balance</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row g-4">
+    <!-- Recent Transactions -->
+    <div class="col-lg-6">
+        <div class="card shadow-lg card-hover h-100">
+            <div class="card-header border-0 pt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="h4 fw-bold text-white mb-1">Recent Transactions</h3>
+                        <p class="text-muted small mb-0">Latest financial activity</p>
+                    </div>
+                    <a href="{% url 'tracker:add_transaction' %}" class="btn btn-gradient btn-sm">
+                        <i class="bi bi-plus-circle"></i> Add New
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-uppercase small fw-semibold text-white">Date</th>
+                                    <th class="text-uppercase small fw-semibold text-white">Category</th>
+                                    <th class="text-uppercase small fw-semibold text-white">Description</th>
+                                    <th class="text-uppercase small fw-semibold text-white text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trans in recent_transactions %}
+                                <tr>
+                                    <td class="fw-medium text-dark">{{ trans.date }}</td>
+                                    <td>
+                                        <span class="badge" style="background: var(--blue);">{{ trans.category_name }}</span>
+                                    </td>
+                                    <td class="text-muted">{{ trans.description|default:"—" }}</td>
+                                    <td class="text-end">
+                                        <span class="fw-bold" style="color: {% if trans.type == 'income' %}var(--green){% else %}var(--light-gray){% endif %};">
+                                            {% if trans.type == 'income' %}+{% else %}−{% endif %}KES {{ trans.amount|floatformat:2 }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'tracker:transaction_list' %}" class="text-decoration-none fw-semibold" style="color: var(--blue);">
+                            View All Transactions <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+                        <p class="text-muted mb-3">No transactions yet</p>
+                        <a href="{% url 'tracker:add_transaction' %}" class="btn btn-gradient">
+                            <i class="bi bi-plus-circle"></i> Add Your First Transaction
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Spending by Category -->
+    <div class="col-lg-6">
+        <div class="card shadow-lg card-hover h-100">
+            <div class="card-header border-0 pt-4">
+                <h3 class="h4 fw-bold text-white mb-1">Spending by Category</h3>
+                <p class="text-muted small mb-0">Breakdown of your expenses</p>
+            </div>
+            <div class="card-body">
+                {% if spending_by_category %}
+                    <div class="d-flex flex-column gap-4">
+                        {% for item in spending_by_category %}
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-tag-fill" style="color: var(--blue);"></i>
+                                    <span class="fw-semibold text-white">{{ item.category_name }}</span>
+                                </div>
+                                <span class="fw-bold text-white">KES {{ item.total|floatformat:2 }}</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {% widthratio item.total summary.total_expenses 100 %}%">
+                                </div>
+                            </div>
+                            <p class="text-muted small mt-1 mb-0">
+                                {% widthratio item.total summary.total_expenses 100 %}% of total expenses
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-pie-chart fs-1 text-muted mb-3"></i>
+                        <p class="text-muted">No spending data available yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

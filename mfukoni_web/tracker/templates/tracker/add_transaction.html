@@ -1,0 +1,616 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Add Transaction - Mfukoni{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+        <div class="mb-4">
+            <a href="{% url 'tracker:transaction_list' %}" class="text-decoration-none d-inline-flex align-items-center gap-2 fw-semibold" style="color: var(--blue);">
+                <i class="bi bi-arrow-left-circle"></i>
+                <span>Back to Transactions</span>
+            </a>
+        </div>
+        
+        <!-- Quick Add Section -->
+        <div class="card shadow-lg mb-4 border-0 card-hover">
+            <div class="card-header border-0 py-3" style="background: var(--popup);">
+                <h5 class="fw-bold text-white mb-0">
+                    <i class="bi bi-lightning-charge-fill" style="color: var(--blue);"></i> Quick Add
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <!-- Income Quick Add -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-arrow-up-circle-fill" style="color: var(--green);"></i>
+                            <span>Add Income</span>
+                        </h6>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-success btn-lg text-start" onclick="quickAdd('income', 'Salary')">
+                                <i class="bi bi-briefcase-fill me-2"></i>
+                                <strong>Salary</strong>
+                                <small class="d-block text-muted">Monthly salary payment</small>
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-lg text-start" onclick="quickAdd('income', 'Investment')">
+                                <i class="bi bi-graph-up-arrow me-2"></i>
+                                <strong>Investment</strong>
+                                <small class="d-block text-muted">Investment returns, dividends</small>
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-lg text-start" onclick="quickAdd('income', 'Freelance')">
+                                <i class="bi bi-laptop me-2"></i>
+                                <strong>Freelance</strong>
+                                <small class="d-block text-muted">Freelance work income</small>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Expense Quick Add -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-arrow-down-circle-fill" style="color: var(--light-gray);"></i>
+                            <span>Add Expense</span>
+                        </h6>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-lg text-start" onclick="quickAdd('expense', 'Food')">
+                                <i class="bi bi-cup-hot-fill me-2"></i>
+                                <strong>Food</strong>
+                                <small class="d-block text-muted">Groceries, restaurants</small>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-lg text-start" onclick="quickAdd('expense', 'Transport')">
+                                <i class="bi bi-car-front-fill me-2"></i>
+                                <strong>Transport</strong>
+                                <small class="d-block text-muted">Fuel, public transport</small>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-lg text-start" onclick="quickAdd('expense', 'Bills')">
+                                <i class="bi bi-receipt me-2"></i>
+                                <strong>Bills</strong>
+                                <small class="d-block text-muted">Utilities, subscriptions</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Form -->
+        <div class="card shadow-lg border-0 card-hover">
+            <div class="card-header gradient-bg text-white border-0 py-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-plus-circle-fill fs-2"></i>
+                    <div>
+                        <h2 class="h3 fw-bold mb-1">Add New Transaction</h2>
+                        <p class="mb-0 opacity-75">Record your income or expense</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" class="needs-validation" novalidate id="transactionForm">
+                    {% csrf_token %}
+                    
+                    <!-- Hidden input to ensure trans_type is always submitted (primary source) -->
+                    <input type="hidden" name="trans_type" id="trans_type_hidden" value="income">
+                    <input type="hidden" name="trans_type_fallback" id="trans_type_fallback" value="income">
+                    
+                    <!-- Display form errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger border-0 mb-4" role="alert">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <strong>Form Errors:</strong>
+                            </div>
+                            <ul class="mb-0 ps-3">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Type Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-diagram-3" style="color: var(--blue);"></i>
+                            <span>Transaction Type <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        {% if form.trans_type.errors %}
+                            <div class="alert alert-danger border-0 mb-3" role="alert">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    <strong>Error:</strong>
+                                    {% for error in form.trans_type.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="row g-3" id="trans_type_container" style="position: relative;">
+                            {% for value, label in form.trans_type.field.choices %}
+                            <div class="col-md-6" style="position: relative;">
+                                <input type="radio" name="trans_type_radio" value="{{ value }}" id="id_trans_type_radio_{{ forloop.counter0 }}" 
+                                       class="btn-check trans-type-radio" {% if form.trans_type.value == value %}checked{% elif forloop.first and not form.trans_type.value %}checked{% endif %}{% if forloop.first %} required{% endif %}>
+                                <label class="btn btn-outline-{% if value == 'income' %}success{% else %}secondary{% endif %} w-100 p-4 border-2 rounded-3 d-flex flex-column align-items-center justify-content-center trans-type-label" 
+                                       for="id_trans_type_radio_{{ forloop.counter0 }}" style="min-height: 120px; cursor: pointer; position: relative; z-index: 1;" data-value="{{ value }}">
+                                    <i class="bi bi-{% if value == 'income' %}arrow-up-circle{% else %}arrow-down-circle{% endif %}-fill fs-1 mb-2" style="color: {% if value == 'income' %}var(--green){% else %}var(--light-gray){% endif %};"></i>
+                                    <span class="fw-bold fs-5 text-white">{{ label }}</span>
+                                    <small class="text-muted mt-1">{% if value == 'income' %}Money coming in{% else %}Money going out{% endif %}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-tag" style="color: var(--blue);"></i>
+                                <span>{{ form.category_id.label }} <span style="color: #dc3545;">*</span></span>
+                            </label>
+                            <a href="{% url 'tracker:category_list' %}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" target="_blank">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Create New Category</span>
+                            </a>
+                        </div>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-folder2-open" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.category_id }}
+                        </div>
+                        {% if form.category_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.category_id.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Select the category that matches your transaction. 
+                            <a href="{% url 'tracker:category_list' %}" class="text-decoration-none" style="color: var(--blue);">Create a new category</a> if needed.
+                        </small>
+                        {% if not form.category_id.field.widget.choices %}
+                            <div class="alert alert-warning mt-2 border-0" style="background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107 !important; color: #ffc107;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <strong>No categories yet!</strong> 
+                                <a href="{% url 'tracker:category_list' %}" class="alert-link" style="color: #ffc107;">Create your first category</a> before adding transactions.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Amount -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-currency-exchange" style="color: var(--blue);"></i>
+                            <span>{{ form.amount.label }} <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text fw-bold" style="background: var(--blue); color: var(--white); border: none;">
+                                <i class="bi bi-cash-coin me-1"></i>KES
+                            </span>
+                            {{ form.amount }}
+                        </div>
+                        {% if form.amount.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.amount.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Enter the transaction amount (positive number)
+                        </small>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-card-text" style="color: var(--blue);"></i>
+                            <span>{{ form.description.label }}</span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-pencil" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.description }}
+                        </div>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Optional: Add a description for this transaction
+                        </small>
+                    </div>
+                    
+                    <!-- Date -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-calendar-event" style="color: var(--blue);"></i>
+                            <span>Transaction Date <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-calendar3" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.date }}
+                        </div>
+                        {% if form.date.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.date.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> The date when this transaction occurred
+                        </small>
+                    </div>
+                    
+                    <!-- Balance Preview -->
+                    <div class="alert alert-info mb-4" style="background: rgba(36, 151, 249, 0.1); border-color: var(--blue); color: var(--blue);">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <strong>Balance Impact</strong>
+                        </div>
+                        <p class="mb-0 small">
+                            <span id="balancePreview">Select transaction type and amount to see balance impact</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <a href="{% url 'tracker:transaction_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-gradient btn-lg px-5 shadow">
+                            <i class="bi bi-check-circle"></i> Save Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Quick add function
+function quickAdd(type, categoryName) {
+    // Set transaction type
+    const typeRadio = document.querySelector(`input[value="${type}"]`);
+    if (typeRadio) {
+        typeRadio.checked = true;
+        typeRadio.dispatchEvent(new Event('change'));
+    }
+    
+    // Find and select category
+    setTimeout(() => {
+        const categorySelect = document.getElementById('id_category_id');
+        if (categorySelect) {
+            for (let option of categorySelect.options) {
+                if (option.text.trim() === categoryName) {
+                    option.selected = true;
+                    categorySelect.dispatchEvent(new Event('change'));
+                    break;
+                }
+            }
+        }
+    }, 100);
+    
+    // Focus on amount field
+    setTimeout(() => {
+        const amountField = document.getElementById('id_amount');
+        if (amountField) {
+            amountField.focus();
+        }
+    }, 200);
+}
+
+// Update category options based on selected type and sync hidden field
+document.querySelectorAll('input[name="trans_type_radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const type = this.value;
+        const select = document.getElementById('id_category_id');
+        const fallbackInput = document.getElementById('trans_type_fallback');
+        const currentValue = select.value;
+        
+        // Update hidden fallback field
+        if (fallbackInput) {
+            fallbackInput.value = type;
+        }
+        
+        // Ensure radio is checked
+        this.checked = true;
+        
+        fetch(`{% url 'tracker:get_categories_ajax' %}?type=${type}`)
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing options
+                select.innerHTML = '';
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select a category...';
+                select.appendChild(defaultOption);
+                
+                // Add category options
+                if (data.categories && Array.isArray(data.categories)) {
+                    data.categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = String(cat.id || cat.get('id', '')); // Handle both object and dict
+                        option.textContent = cat.name || cat.get('name', '');
+                        select.appendChild(option);
+                    });
+                    
+                    // Try to restore previous selection if it exists in new list
+                    if (currentValue) {
+                        const optionExists = Array.from(select.options).some(opt => opt.value === currentValue);
+                        if (optionExists) {
+                            select.value = currentValue;
+                        } else {
+                            // If previous selection doesn't exist, select first category if available
+                            if (data.categories.length > 0) {
+                                select.value = String(data.categories[0].id || data.categories[0].get('id', ''));
+                            }
+                        }
+                    } else if (data.categories.length > 0) {
+                        // If no previous selection, select first category
+                        select.value = String(data.categories[0].id || data.categories[0].get('id', ''));
+                    }
+                }
+                
+                // Trigger change event to update any dependent fields
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            })
+            .catch(error => {
+                // Silently handle error - form will show validation message
+            });
+    });
+    
+    // Also update on click to ensure value is set
+    radio.addEventListener('click', function() {
+        const fallbackInput = document.getElementById('trans_type_fallback');
+        if (fallbackInput) {
+            fallbackInput.value = this.value;
+        }
+    });
+});
+
+// Balance preview
+function updateBalancePreview() {
+    const type = document.querySelector('input[name="trans_type_radio"]:checked')?.value || document.getElementById('trans_type_hidden')?.value;
+    const amount = parseFloat(document.getElementById('id_amount')?.value || 0);
+    const preview = document.getElementById('balancePreview');
+    
+    if (!type || !amount || amount <= 0) {
+        preview.textContent = 'Select transaction type and amount to see balance impact';
+        return;
+    }
+    
+    const impact = type === 'income' ? '+' : '-';
+    preview.innerHTML = `This transaction will <strong>${impact}KES ${amount.toFixed(2)}</strong> to your balance.`;
+}
+
+document.getElementById('id_amount')?.addEventListener('input', updateBalancePreview);
+document.querySelectorAll('input[name="trans_type_radio"]').forEach(radio => {
+    radio.addEventListener('change', updateBalancePreview);
+});
+
+// Ensure radio buttons work properly
+document.addEventListener('DOMContentLoaded', function() {
+    const radios = document.querySelectorAll('input[name="trans_type"]');
+    const fallbackInput = document.getElementById('trans_type_fallback');
+    
+    // Ensure at least one is checked on load and update hidden inputs
+    const hiddenInput = document.getElementById('trans_type_hidden');
+    if (radios.length > 0) {
+        let checked = Array.from(radios).some(r => r.checked);
+        if (!checked && radios[0]) {
+            radios[0].checked = true;
+        }
+        
+        // Update hidden inputs with the checked radio's value
+        const checkedRadio = document.querySelector('input[name="trans_type"].trans-type-radio:checked') || radios[0];
+        if (checkedRadio && hiddenInput) {
+            hiddenInput.value = checkedRadio.value;
+        }
+        if (checkedRadio && fallbackInput) {
+            fallbackInput.value = checkedRadio.value;
+        }
+    }
+    
+    // Function to handle radio selection
+    function selectRadio(radio) {
+        // Uncheck all radios first
+        document.querySelectorAll('input[name="trans_type_radio"].trans-type-radio').forEach(r => {
+            r.checked = false;
+        });
+        
+        // Check the selected radio
+        radio.checked = true;
+        
+        // Update hidden inputs
+        const hiddenInput = document.getElementById('trans_type_hidden');
+        if (hiddenInput) {
+            hiddenInput.value = radio.value;
+        }
+        if (fallbackInput) {
+            fallbackInput.value = radio.value;
+        }
+        
+        // Visual feedback
+        document.querySelectorAll('.trans-type-label').forEach(l => {
+            l.style.opacity = '0.7';
+            l.style.borderWidth = '2px';
+        });
+        const label = document.querySelector(`label[for="${radio.id}"]`);
+        if (label) {
+            label.style.opacity = '1';
+            label.style.borderWidth = '3px';
+        }
+        
+        // Trigger change event
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    
+    // Add click handlers to labels - use mousedown to catch it early
+    document.querySelectorAll('.trans-type-label').forEach(label => {
+        label.addEventListener('mousedown', function(e) {
+            e.preventDefault(); // Prevent default to ensure our handler runs
+            const radioId = this.getAttribute('for');
+            const radio = document.getElementById(radioId);
+            if (radio) {
+                selectRadio(radio);
+            }
+        });
+        
+        label.addEventListener('click', function(e) {
+            e.preventDefault();
+            const radioId = this.getAttribute('for');
+            const radio = document.getElementById(radioId);
+            if (radio) {
+                selectRadio(radio);
+            }
+        });
+    });
+    
+    // Add change handlers to radios directly
+    document.querySelectorAll('input[name="trans_type_radio"].trans-type-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                const hiddenInput = document.getElementById('trans_type_hidden');
+                if (hiddenInput) {
+                    hiddenInput.value = this.value;
+                }
+                if (fallbackInput) {
+                    fallbackInput.value = this.value;
+                }
+            }
+        });
+    });
+    
+    // Load categories for initially selected type
+    const checkedRadio = document.querySelector('input[name="trans_type_radio"]:checked');
+    if (checkedRadio) {
+        // Update hidden input
+        const hiddenInput = document.getElementById('trans_type_hidden');
+        if (hiddenInput) {
+            hiddenInput.value = checkedRadio.value;
+        }
+        setTimeout(() => {
+            checkedRadio.dispatchEvent(new Event('change', { bubbles: true }));
+        }, 200);
+    }
+    
+});
+
+// Form validation and submission handler
+let isSubmitting = false;
+document.getElementById('transactionForm')?.addEventListener('submit', function(e) {
+    // Prevent duplicate submissions
+    if (isSubmitting) {
+        return true;
+    }
+    
+    // Get the hidden input (primary source)
+    const hiddenInput = document.getElementById('trans_type_hidden');
+    const fallbackInput = document.getElementById('trans_type_fallback');
+    
+    if (!hiddenInput) {
+        alert('Form error: Please refresh the page.');
+        e.preventDefault();
+        return false;
+    }
+    
+    // Try to get value from checked radio first
+    let transTypeRadio = document.querySelector('input[name="trans_type_radio"].trans-type-radio:checked');
+    let transTypeValue = '';
+    
+    if (transTypeRadio && transTypeRadio.value) {
+        transTypeValue = transTypeRadio.value;
+    } else if (hiddenInput && hiddenInput.value) {
+        transTypeValue = hiddenInput.value;
+        // Update the radio to match
+        const matchingRadio = document.querySelector(`input[name="trans_type_radio"].trans-type-radio[value="${transTypeValue}"]`);
+        if (matchingRadio) {
+            matchingRadio.checked = true;
+        }
+    } else if (fallbackInput && fallbackInput.value) {
+        transTypeValue = fallbackInput.value;
+    } else {
+        // Default to first radio
+        const firstRadio = document.querySelector('input[name="trans_type_radio"].trans-type-radio');
+        if (firstRadio) {
+            firstRadio.checked = true;
+            transTypeValue = firstRadio.value;
+        } else {
+            // Last resort: default to 'income'
+            transTypeValue = 'income';
+        }
+    }
+    
+    // Ensure hidden input has the value before validation
+    if (!hiddenInput) {
+        e.preventDefault();
+        alert('Form error: Please refresh the page and try again.');
+        return false;
+    }
+    
+    // Set the value using multiple methods to ensure it sticks
+    hiddenInput.value = transTypeValue;
+    hiddenInput.setAttribute('value', transTypeValue);
+    hiddenInput.name = 'trans_type'; // Ensure name is correct
+    
+    if (fallbackInput) {
+        fallbackInput.value = transTypeValue;
+    }
+    
+    const categoryId = document.getElementById('id_category_id')?.value;
+    const amount = document.getElementById('id_amount')?.value;
+    const date = document.getElementById('id_date')?.value;
+    
+    // Client-side validation
+    if (!transTypeValue) {
+        e.preventDefault();
+        alert('Please select a transaction type (Income or Expense)');
+        document.querySelectorAll('.trans-type-label').forEach(l => {
+            l.style.border = '2px solid #dc3545';
+        });
+        return false;
+    }
+    
+    // Ensure category is selected
+    if (!categoryId || categoryId === '') {
+        e.preventDefault();
+        alert('Please select a category');
+        return false;
+    }
+    
+    // Verify the value will be submitted
+    const formData = new FormData(this);
+    const submittedValue = formData.get('trans_type');
+    
+    if (!submittedValue) {
+        // Retry setting the value
+        if (hiddenInput && transTypeValue) {
+            hiddenInput.value = transTypeValue;
+            hiddenInput.setAttribute('value', transTypeValue);
+            hiddenInput.name = 'trans_type';
+            
+            const formData2 = new FormData(this);
+            const submittedValue2 = formData2.get('trans_type');
+            
+            if (!submittedValue2) {
+                e.preventDefault();
+                alert('Error: Transaction type not set. Please select Income or Expense and try again.');
+                return false;
+            }
+        } else {
+            e.preventDefault();
+            alert('Error: Transaction type not set. Please select Income or Expense and try again.');
+            return false;
+        }
+    }
+    
+    // Mark as submitting and allow form to submit
+    isSubmitting = true;
+    return true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mfukoni-web
+    image: mfukoni:latest
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      # Mount data directory for persistence (custom RDBMS data)
+      - ./data:/app/data
+      # Optional: Mount static files for development (commented out for production)
+      # - ./mfukoni_web/staticfiles:/app/mfukoni_web/staticfiles
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-change-me-in-production}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+      - LANGUAGE_CODE=${LANGUAGE_CODE:-en-us}
+      - TIME_ZONE=${TIME_ZONE:-Africa/Nairobi}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mfukoni-network
+
+networks:
+  mfukoni-network:
+    driver: bridge

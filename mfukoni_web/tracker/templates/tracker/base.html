@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mfukoni Finance Tracker{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        :root {
+            --dark-bg: #0B1F30;
+            --bg: #15293A;
+            --popup: #214055;
+            --green: #29BD98;
+            --blue: #2497F9;
+            --dark-gray: #466E8A;
+            --white: #FFFFFF;
+            --gray-sky: #658CA7;
+            --light-gray: #9FBBCD;
+            --button-gradient: linear-gradient(135deg, #147B9D 0%, #2BC398 100%);
+            --rate-gradient: linear-gradient(135deg, #2BC398 0%, #2497F9 100%);
+        }
+        body {
+            background: var(--dark-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(36, 151, 249, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(41, 189, 152, 0.05) 0px, transparent 50%);
+            color: var(--white);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .gradient-bg {
+            background: var(--button-gradient);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+        }
+        .stat-card {
+            background: var(--bg);
+            border-left: 4px solid;
+            color: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0.3;
+        }
+        .stat-income {
+            border-left-color: var(--green);
+        }
+        .table-light {
+            background: var(--popup) !important;
+        }
+        .table-light th {
+            color: var(--white) !important;
+        }
+        .stat-expense {
+            border-left-color: var(--dark-gray);
+        }
+        .stat-balance {
+            border-left-color: var(--blue);
+        }
+        .btn-gradient {
+            background: var(--button-gradient);
+            border: none;
+            color: var(--white);
+            font-weight: 500;
+            padding: 0.625rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(20, 123, 157, 0.3);
+        }
+        .btn-gradient:hover {
+            background: var(--rate-gradient);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 123, 157, 0.5);
+        }
+        .btn-gradient:active {
+            transform: translateY(0);
+        }
+        .card {
+            background: var(--bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--white);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header {
+            background: var(--popup);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.25rem 1.5rem;
+        }
+        .form-control, .form-select {
+            background: var(--popup);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            background: var(--popup);
+            border-color: var(--blue);
+            color: var(--white);
+            box-shadow: 0 0 0 3px rgba(36, 151, 249, 0.15);
+            outline: none;
+        }
+        .form-control::placeholder {
+            color: var(--gray-sky);
+        }
+        .input-group-text {
+            background: var(--popup);
+            border: 1px solid var(--dark-gray);
+            color: var(--gray-sky);
+        }
+        .table {
+            color: var(--white);
+        }
+        .table-dark {
+            background: var(--popup);
+        }
+        .table-light {
+            background: var(--bg);
+            color: var(--white);
+        }
+        .text-muted {
+            color: var(--gray-sky) !important;
+        }
+        .text-secondary {
+            color: var(--light-gray) !important;
+        }
+        .bg-secondary {
+            background-color: var(--dark-gray) !important;
+        }
+        .btn-outline-secondary {
+            border-color: var(--dark-gray);
+            color: var(--light-gray);
+        }
+        .btn-outline-secondary:hover {
+            background-color: var(--dark-gray);
+            border-color: var(--dark-gray);
+            color: var(--white);
+        }
+        .btn-outline-success {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .btn-outline-success:hover {
+            background-color: var(--green);
+            border-color: var(--green);
+            color: var(--white);
+        }
+        .text-success {
+            color: var(--green) !important;
+        }
+        .bg-success {
+            background-color: var(--green) !important;
+        }
+        .badge {
+            color: var(--white);
+        }
+        .alert-success {
+            background-color: rgba(41, 189, 152, 0.2);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        .btn-check {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+            pointer-events: none;
+        }
+        .btn-check:checked + .btn {
+            border-width: 3px !important;
+            transform: scale(1.02);
+            box-shadow: 0 0 0 0.2rem rgba(36, 151, 249, 0.25);
+        }
+        .btn-check:focus + .btn {
+            box-shadow: 0 0 0 0.2rem rgba(36, 151, 249, 0.25);
+        }
+        .input-group-lg .form-control,
+        .input-group-lg .form-select {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        .border-top {
+            border-color: var(--dark-gray) !important;
+        }
+        .progress {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, var(--blue), var(--green));
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+        
+        /* Premium Navigation */
+        .navbar {
+            background: rgba(21, 41, 58, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem 0;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            color: var(--light-gray) !important;
+        }
+        .nav-link:hover {
+            background: rgba(36, 151, 249, 0.1);
+            color: var(--blue) !important;
+        }
+        .nav-link.active {
+            background: rgba(36, 151, 249, 0.15);
+            color: var(--blue) !important;
+        }
+        
+        /* Premium Typography */
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: -0.5px;
+            font-weight: 700;
+        }
+        .display-5 {
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        
+        /* Premium Shadows */
+        .shadow-lg {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+        }
+        .shadow {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* Smooth Animations */
+        * {
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        
+        /* Premium Input Groups */
+        .input-group-text {
+            border-radius: 8px 0 0 8px;
+            border-right: none;
+        }
+        .input-group .form-control {
+            border-radius: 0 8px 8px 0;
+        }
+        .input-group-lg .form-control {
+            border-radius: 0 8px 8px 0;
+        }
+        .input-group-lg .input-group-text {
+            border-radius: 8px 0 0 8px;
+        }
+        
+        /* Premium Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-outline-success, .btn-outline-secondary, .btn-outline-danger {
+            border-width: 1.5px;
+        }
+        .btn-outline-success:hover, .btn-outline-secondary:hover, .btn-outline-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Premium Empty States */
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+        .empty-state i {
+            opacity: 0.5;
+        }
+        
+        /* Premium Table Styling */
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .table-hover tbody tr {
+            transition: all 0.2s ease;
+        }
+        .table-hover tbody tr:hover {
+            color: var(--white);
+            background-color: rgba(36, 151, 249, 0.08);
+            transform: scale(1.01);
+        }
+        .table thead th {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        
+        /* Premium Alerts */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem 1.25rem;
+            backdrop-filter: blur(10px);
+        }
+        .alert-info {
+            background-color: rgba(36, 151, 249, 0.12);
+            border-left: 4px solid var(--blue) !important;
+            color: var(--blue);
+        }
+        .alert-link {
+            text-decoration: underline;
+            font-weight: 500;
+        }
+        
+        /* Premium Badge */
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg shadow-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{% url 'tracker:dashboard' %}">
+                <i class="bi bi-wallet2 fs-3" style="color: var(--blue);"></i>
+                <span class="fw-bold fs-4">Mfukoni</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto d-flex align-items-center gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold d-flex align-items-center gap-2" href="{% url 'tracker:dashboard' %}">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold d-flex align-items-center gap-2" href="{% url 'tracker:transaction_list' %}">
+                            <i class="bi bi-credit-card"></i>
+                            <span>Transactions</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold d-flex align-items-center gap-2" href="{% url 'tracker:category_list' %}">
+                            <i class="bi bi-tags"></i>
+                            <span>Categories</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold d-flex align-items-center gap-2" href="{% url 'tracker:budget_list' %}">
+                            <i class="bi bi-piggy-bank"></i>
+                            <span>Budgets</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold d-flex align-items-center gap-2" href="{% url 'tracker:reports' %}">
+                            <i class="bi bi-graph-up"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid py-4">
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %}-fill me-2"></i>
+                        <div>{{ message }}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-5" style="background: var(--bg) !important; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="container">
+            <p class="mb-1 text-white fw-medium">&copy; 2026 Mfukoni Finance Tracker</p>
+            <p class="text-muted small mb-0">Built with Custom RDBMS</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

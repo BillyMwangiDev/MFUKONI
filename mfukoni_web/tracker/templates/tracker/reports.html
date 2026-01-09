@@ -1,0 +1,308 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Reports - Mfukoni{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h1 class="display-5 fw-bold text-white mb-2">
+            <i class="bi bi-graph-up" style="color: var(--blue);"></i> Financial Reports
+        </h1>
+        <p class="text-muted">Analyze your financial trends and patterns</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary shadow" data-bs-toggle="modal" data-bs-target="#exportReportsModal">
+        <i class="bi bi-download"></i> Export Reports
+    </button>
+</div>
+
+<!-- Current Month Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-lg card-hover h-100" style="background: var(--bg);">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-month fs-1 mb-3" style="color: var(--blue);"></i>
+                <h6 class="text-muted text-uppercase small fw-semibold mb-2">Current Month</h6>
+                <h5 class="fw-bold text-dark">{{ current_summary.month_name }} {{ current_summary.year }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-lg card-hover h-100" style="background: var(--bg); border-left: 4px solid var(--green);">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-up-circle fs-1 mb-3" style="color: var(--green);"></i>
+                <h6 class="text-muted text-uppercase small fw-semibold mb-2">Income</h6>
+                <h4 class="fw-bold" style="color: var(--green);">KES {{ current_summary.income|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-lg card-hover h-100" style="background: var(--bg); border-left: 4px solid var(--dark-gray);">
+            <div class="card-body text-center">
+                <i class="bi bi-arrow-down-circle fs-1 mb-3" style="color: var(--light-gray);"></i>
+                <h6 class="text-muted text-uppercase small fw-semibold mb-2">Expenses</h6>
+                <h4 class="fw-bold" style="color: var(--light-gray);">KES {{ current_summary.expenses|default:0|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-lg card-hover h-100" style="background: var(--bg); border-left: 4px solid var(--blue);">
+            <div class="card-body text-center">
+                <i class="bi bi-wallet2 fs-1 mb-3" style="color: var(--blue);"></i>
+                <h6 class="text-muted text-uppercase small fw-semibold mb-2">Balance</h6>
+                <h4 class="fw-bold" style="color: {% if current_summary.balance|default:0 >= 0 %}var(--green){% else %}var(--light-gray){% endif %};">
+                    KES {{ current_summary.balance|default:0|floatformat:2 }}
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Monthly Trends -->
+    <div class="col-lg-8">
+        <div class="card shadow-lg card-hover h-100">
+            <div class="card-header border-0 pt-4">
+                <h3 class="h4 fw-bold text-white mb-1">6-Month Trend</h3>
+                <p class="text-muted small mb-0">Income and expenses over time</p>
+            </div>
+            <div class="card-body">
+                {% if monthly_summaries %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
+                            <thead>
+                                <tr style="background: var(--popup); border-bottom: 2px solid rgba(255, 255, 255, 0.1);">
+                                    <th class="text-uppercase small fw-bold text-white py-3 ps-4" style="border: none;">Month</th>
+                                    <th class="text-uppercase small fw-bold text-white text-end py-3" style="border: none;">
+                                        <i class="bi bi-arrow-up-circle me-1" style="color: var(--green);"></i>Income
+                                    </th>
+                                    <th class="text-uppercase small fw-bold text-white text-end py-3" style="border: none;">
+                                        <i class="bi bi-arrow-down-circle me-1" style="color: var(--dark-gray);"></i>Expenses
+                                    </th>
+                                    <th class="text-uppercase small fw-bold text-white text-end py-3" style="border: none;">
+                                        <i class="bi bi-wallet2 me-1" style="color: var(--blue);"></i>Balance
+                                    </th>
+                                    <th class="text-uppercase small fw-bold text-white text-center py-3 pe-4" style="border: none;">
+                                        <i class="bi bi-list-ul me-1" style="color: var(--blue);"></i>Transactions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for summary in monthly_summaries %}
+                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.2s ease;">
+                                    <td class="fw-semibold py-3 ps-4" style="border: none;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-calendar3" style="color: var(--blue); font-size: 0.9rem;"></i>
+                                            <span class="text-dark" style="font-weight: 600;">{{ summary.month_name }} {{ summary.year }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end py-3" style="color: var(--green); border: none;">
+                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                            <span class="fw-bold">KES {{ summary.income|default:0|floatformat:2 }}</span>
+                                            <i class="bi bi-check-circle-fill" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                        </div>
+                                    </td>
+                                    <td class="text-end py-3" style="color: var(--light-gray); border: none;">
+                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                            <span class="fw-bold">KES {{ summary.expenses|default:0|floatformat:2 }}</span>
+                                            <i class="bi bi-x-circle-fill" style="font-size: 0.75rem; opacity: 0.7;"></i>
+                                        </div>
+                                    </td>
+                                    <td class="text-end py-3" style="border: none;">
+                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                            <span class="fw-bold" style="color: {% if summary.balance|default:0 >= 0 %}var(--green){% else %}var(--light-gray){% endif %};">
+                                                KES {{ summary.balance|default:0|floatformat:2 }}
+                                            </span>
+                                            {% if summary.balance|default:0 >= 0 %}
+                                                <i class="bi bi-arrow-up-circle-fill" style="color: var(--green); font-size: 0.75rem;"></i>
+                                            {% else %}
+                                                <i class="bi bi-arrow-down-circle-fill" style="color: var(--light-gray); font-size: 0.75rem;"></i>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="text-center py-3 pe-4" style="border: none;">
+                                        <span class="badge" style="background: rgba(36, 151, 249, 0.2); color: var(--blue); border: 1px solid var(--blue); padding: 0.35rem 0.75rem;">
+                                            <i class="bi bi-list-ul me-1"></i>{{ summary.transaction_count }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <style>
+                        .table tbody tr {
+                            background-color: transparent;
+                        }
+                        .table tbody tr:nth-child(even) {
+                            background-color: rgba(255, 255, 255, 0.02);
+                        }
+                        .table tbody tr:hover {
+                            background-color: rgba(36, 151, 249, 0.1) !important;
+                            transform: translateX(2px);
+                            box-shadow: -2px 0 0 var(--blue);
+                        }
+                        .table tbody tr:last-child {
+                            border-bottom: none !important;
+                        }
+                        .table tbody tr td {
+                            transition: all 0.2s ease;
+                        }
+                    </style>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-graph-up fs-1 text-muted mb-3"></i>
+                        <p class="text-muted">No data available</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-4">
+        <div class="d-flex flex-column gap-4">
+            <!-- Top Categories -->
+            <div class="card shadow-lg card-hover">
+                <div class="card-header border-0 pt-4">
+                    <h3 class="h4 fw-bold text-white mb-1">Top Spending Categories</h3>
+                    <p class="text-muted small mb-0">All-time highest expenses</p>
+                </div>
+                <div class="card-body">
+                    {% if top_categories %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for cat in top_categories %}
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-tag-fill" style="color: var(--blue);"></i>
+                                        <span class="fw-semibold text-white">{{ cat.category_name }}</span>
+                                    </div>
+                                    <span class="fw-bold text-white">KES {{ cat.total|default:0|floatformat:2 }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {% if top_categories and top_categories.0.total > 0 %}{% widthratio cat.total top_categories.0.total 100 %}{% else %}0{% endif %}%">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-pie-chart fs-1 text-muted mb-3"></i>
+                            <p class="text-muted">No spending data available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Budget Status -->
+            <div class="card shadow-lg card-hover">
+                <div class="card-header border-0 pt-4">
+                    <h3 class="h4 fw-bold text-white mb-1">
+                        <i class="bi bi-piggy-bank-fill" style="color: var(--blue);"></i> Budget Status
+                    </h3>
+                    <p class="text-muted small mb-0">Current month: {{ current_month }}</p>
+                </div>
+                <div class="card-body">
+                    {% if budget_status %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for budget in budget_status %}
+                            <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--blue);">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-tag-fill" style="color: var(--blue);"></i>
+                                        <span class="fw-bold text-white">{{ budget.category_name }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">Budget:</span>
+                                    <span class="fw-semibold text-white">KES {{ budget.budget_limit|floatformat:2 }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">Spent:</span>
+                                    <span class="fw-semibold" style="color: {% if budget.spent > budget.budget_limit %}#dc3545{% else %}var(--light-gray){% endif %};">
+                                        KES {{ budget.spent|floatformat:2 }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">Remaining:</span>
+                                    <span class="fw-semibold" style="color: {% if budget.remaining < 0 %}#dc3545{% else %}var(--green){% endif %};">
+                                        KES {{ budget.remaining|floatformat:2 }}
+                                    </span>
+                                </div>
+                                <div class="progress mt-2" style="height: 10px;">
+                                    <div class="progress-bar {% if budget.percentage_used > 100 %}bg-danger{% elif budget.percentage_used > 80 %}bg-warning{% else %}{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {% if budget.percentage_used > 100 %}100{% else %}{{ budget.percentage_used|floatformat:0 }}{% endif %}%">
+                                    </div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">{{ budget.percentage_used|floatformat:0 }}% used</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{% url 'tracker:budget_list' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i> Manage Budgets
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-piggy-bank fs-1 text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No budgets set for this month</p>
+                            <a href="{% url 'tracker:budget_list' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-plus-circle"></i> Set Budget
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Reports Modal -->
+<div class="modal fade" id="exportReportsModal" tabindex="-1" aria-labelledby="exportReportsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--popup); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white fw-bold" id="exportReportsModalLabel">
+                    <i class="bi bi-download" style="color: var(--blue);"></i> Export Reports
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-4">Choose the format you want to export your financial reports:</p>
+                <div class="d-grid gap-3">
+                    <a href="{% url 'tracker:export_reports' %}?format=pdf" class="btn btn-outline-danger btn-lg text-start">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-filetype-pdf fs-3" style="color: #dc3545;"></i>
+                                <div>
+                                    <div class="fw-bold text-white">PDF Format</div>
+                                    <small class="text-muted">Portable Document Format, ready to print or share</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                    </a>
+                    <a href="{% url 'tracker:export_reports' %}?format=excel" class="btn btn-outline-success btn-lg text-start">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-filetype-xlsx fs-3" style="color: var(--green);"></i>
+                                <div>
+                                    <div class="fw-bold text-white">Excel Format</div>
+                                    <small class="text-muted">Microsoft Excel workbook with multiple sheets</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

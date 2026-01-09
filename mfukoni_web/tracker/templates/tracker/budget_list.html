@@ -1,0 +1,154 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Budgets - Mfukoni{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-5 fw-bold text-white mb-2">
+        <i class="bi bi-piggy-bank-fill" style="color: var(--blue);"></i> Budget Management
+    </h1>
+    <p class="text-muted">Set and track monthly spending limits by category</p>
+</div>
+
+<div class="row g-4">
+    <!-- Add Budget Form -->
+    <div class="col-lg-5">
+        <div class="card shadow-lg border-0 card-hover h-100">
+            <div class="card-header gradient-bg text-white border-0 py-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-plus-circle-fill fs-3"></i>
+                    <h3 class="h4 fw-bold mb-0">Set Budget</h3>
+                </div>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-tag" style="color: var(--blue);"></i>
+                            <span>{{ form.category_id.label }} <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-folder2-open" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.category_id }}
+                        </div>
+                        {% if form.category_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.category_id.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Select the expense category you want to set a budget for. 
+                            The category name will be visible in reports.
+                        </small>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-currency-exchange" style="color: var(--blue);"></i>
+                            <span>{{ form.monthly_limit.label }} <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text fw-bold" style="background: var(--blue); color: var(--white); border: none;">
+                                <i class="bi bi-cash-coin me-1"></i>KES
+                            </span>
+                            {{ form.monthly_limit }}
+                        </div>
+                        {% if form.monthly_limit.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.monthly_limit.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-calendar-event" style="color: var(--blue);"></i>
+                            <span>{{ form.month.label }} <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-calendar3" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.month }}
+                        </div>
+                        {% if form.month.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.month.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-gradient w-100 btn-lg shadow">
+                        <i class="bi bi-check-circle"></i> Set Budget
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Status -->
+    <div class="col-lg-7">
+        <div class="card shadow-lg border-0 card-hover h-100">
+            <div class="card-header border-0 py-4">
+                <h3 class="h4 fw-bold text-white mb-1">Budget Status</h3>
+                <p class="text-muted small mb-0">Current month: {{ current_month }}</p>
+            </div>
+            <div class="card-body">
+                {% if budget_status %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-uppercase small fw-bold text-white">Category</th>
+                                    <th class="text-uppercase small fw-bold text-white text-end">Budget</th>
+                                    <th class="text-uppercase small fw-bold text-white text-end">Spent</th>
+                                    <th class="text-uppercase small fw-bold text-white text-end">Remaining</th>
+                                    <th class="text-uppercase small fw-bold text-white text-center">Progress</th>
+                                    <th class="text-uppercase small fw-bold text-white text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for budget in budget_status %}
+                                <tr>
+                                    <td class="fw-medium text-dark">{{ budget.category_name }}</td>
+                                    <td class="text-end text-dark">KES {{ budget.budget_limit|floatformat:2 }}</td>
+                                    <td class="text-end" style="color: {% if budget.spent > budget.budget_limit %}#dc3545{% else %}var(--light-gray){% endif %};">
+                                        KES {{ budget.spent|floatformat:2 }}
+                                    </td>
+                                    <td class="text-end" style="color: {% if budget.remaining < 0 %}#dc3545{% else %}var(--green){% endif %};">
+                                        KES {{ budget.remaining|floatformat:2 }}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height: 20px; width: 100px; margin: 0 auto;">
+                                            <div class="progress-bar {% if budget.percentage_used > 100 %}bg-danger{% elif budget.percentage_used > 80 %}bg-warning{% else %}{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {% if budget.percentage_used > 100 %}100{% else %}{{ budget.percentage_used|floatformat:0 }}{% endif %}%">
+                                                {{ budget.percentage_used|floatformat:0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="post" action="{% url 'tracker:delete_budget' budget.budget_id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" onclick="return confirm('Delete budget for {{ budget.category_name }}?')" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-piggy-bank fs-1 text-muted mb-3"></i>
+                        <p class="text-muted mb-3">No budgets set for this month</p>
+                        <p class="text-muted small">Set a budget to start tracking your spending limits</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

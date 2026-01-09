@@ -1,0 +1,227 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Edit Transaction - Mfukoni{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="mb-4">
+            <a href="{% url 'tracker:transaction_list' %}" class="text-decoration-none d-inline-flex align-items-center gap-2 fw-semibold" style="color: var(--blue);">
+                <i class="bi bi-arrow-left-circle"></i>
+                <span>Back to Transactions</span>
+            </a>
+        </div>
+        
+        <div class="card shadow-lg border-0 card-hover">
+            <div class="card-header gradient-bg text-white border-0 py-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-pencil-square fs-2"></i>
+                    <div>
+                        <h2 class="h3 fw-bold mb-1">Edit Transaction</h2>
+                        <p class="mb-0 opacity-75">Update transaction details</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" class="needs-validation" novalidate id="transactionForm">
+                    {% csrf_token %}
+                    
+                    <!-- Type Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-diagram-3" style="color: var(--blue);"></i>
+                            <span>Transaction Type <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="row g-3">
+                            {% for value, label in form.trans_type.field.choices %}
+                            <div class="col-md-6">
+                                <input type="radio" name="trans_type_radio" value="{{ value }}" id="id_trans_type_radio_{{ forloop.counter0 }}" 
+                                       class="btn-check trans-type-radio" {% if value == transaction.type %}checked{% endif %}>
+                                <label class="btn btn-outline-{% if value == 'income' %}success{% else %}secondary{% endif %} w-100 p-4 border-2 rounded-3 d-flex flex-column align-items-center justify-content-center" 
+                                       for="id_trans_type_radio_{{ forloop.counter0 }}" style="min-height: 120px; cursor: pointer;">
+                                    <i class="bi bi-{% if value == 'income' %}arrow-up-circle{% else %}arrow-down-circle{% endif %}-fill fs-1 mb-2" style="color: {% if value == 'income' %}var(--green){% else %}var(--light-gray){% endif %};"></i>
+                                    <span class="fw-bold fs-5 text-white">{{ label }}</span>
+                                    <small class="text-muted mt-1">{% if value == 'income' %}Money coming in{% else %}Money going out{% endif %}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" name="trans_type" id="trans_type_hidden" value="{{ transaction.type }}">
+                    </div>
+                    
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                                <i class="bi bi-tag" style="color: var(--blue);"></i>
+                                <span>{{ form.category_id.label }} <span style="color: #dc3545;">*</span></span>
+                            </label>
+                            <a href="{% url 'tracker:category_list' %}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" target="_blank">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Create New Category</span>
+                            </a>
+                        </div>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-folder2-open" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.category_id }}
+                        </div>
+                        {% if form.category_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.category_id.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Select the category that matches your transaction. 
+                            <a href="{% url 'tracker:category_list' %}" class="text-decoration-none" style="color: var(--blue);">Create a new category</a> if needed.
+                        </small>
+                    </div>
+                    
+                    <!-- Amount -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-currency-exchange" style="color: var(--blue);"></i>
+                            <span>{{ form.amount.label }} <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text fw-bold" style="background: var(--blue); color: var(--white); border: none;">
+                                <i class="bi bi-cash-coin me-1"></i>KES
+                            </span>
+                            {{ form.amount }}
+                        </div>
+                        {% if form.amount.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.amount.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Enter the transaction amount
+                        </small>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-card-text" style="color: var(--blue);"></i>
+                            <span>{{ form.description.label }}</span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-pencil" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.description }}
+                        </div>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> Optional: Add a description for this transaction
+                        </small>
+                    </div>
+                    
+                    <!-- Date -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-calendar-event" style="color: var(--blue);"></i>
+                            <span>Transaction Date <span style="color: #dc3545;">*</span></span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="bi bi-calendar3" style="color: var(--blue);"></i>
+                            </span>
+                            {{ form.date }}
+                        </div>
+                        {% if form.date.errors %}
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.date.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted mt-1 d-block">
+                            <i class="bi bi-info-circle"></i> The date when this transaction occurred
+                        </small>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                        <a href="{% url 'tracker:transaction_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-gradient btn-lg px-5 shadow">
+                            <i class="bi bi-check-circle"></i> Update Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sync hidden input with radio buttons and update categories
+document.addEventListener('DOMContentLoaded', function() {
+    const hiddenInput = document.getElementById('trans_type_hidden');
+    const radios = document.querySelectorAll('input[name="trans_type_radio"]');
+    
+    // Update hidden input when radio changes
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked && hiddenInput) {
+                hiddenInput.value = this.value;
+            }
+        });
+        
+        // Update category options based on selected type
+        radio.addEventListener('change', function() {
+            const type = this.value;
+            fetch(`{% url 'tracker:get_categories_ajax' %}?type=${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('id_category_id');
+                    const currentValue = select.value;
+                    select.innerHTML = '';
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Select a category...';
+                    select.appendChild(defaultOption);
+                    // Add categories
+                    if (data.categories && Array.isArray(data.categories)) {
+                        data.categories.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = String(cat.id || cat.get('id', ''));
+                            option.textContent = cat.name || cat.get('name', '');
+                            select.appendChild(option);
+                        });
+                    }
+                    // Try to restore previous selection if it exists
+                    if (currentValue) {
+                        select.value = currentValue;
+                    }
+                });
+        });
+    });
+    
+    // Ensure hidden input is set on page load
+    const checkedRadio = document.querySelector('input[name="trans_type_radio"]:checked');
+    if (checkedRadio && hiddenInput) {
+        hiddenInput.value = checkedRadio.value;
+    }
+});
+
+// Form submission handler
+document.getElementById('transactionForm')?.addEventListener('submit', function(e) {
+    const hiddenInput = document.getElementById('trans_type_hidden');
+    const checkedRadio = document.querySelector('input[name="trans_type_radio"]:checked');
+    
+    if (checkedRadio && hiddenInput) {
+        hiddenInput.value = checkedRadio.value;
+    }
+    
+    return true;
+});
+</script>
+{% endblock %}
