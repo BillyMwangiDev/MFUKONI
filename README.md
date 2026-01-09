@@ -1192,6 +1192,17 @@ That's it! The application will automatically:
 
 **For detailed Docker instructions, see [DOCKER.md](DOCKER.md)**
 
+#### Format Code (Optional)
+
+Before committing, format code with black:
+```bash
+# Install black if not already installed
+pip install black
+
+# Format code
+black --line-length 100 my_rdbms/ tests/
+```
+
 **Stop the application:**
 ```bash
 docker-compose down
