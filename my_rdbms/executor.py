@@ -5,7 +5,7 @@ Query executor module - executes parsed SQL commands.
 import operator
 from typing import Dict, Any, List, Optional, Callable
 from my_rdbms.table import Table
-from my_rdbms.exceptions import TableError, ParseError
+from my_rdbms.exceptions import TableError, ParseError, PrimaryKeyError, UniqueConstraintError
 
 
 class QueryExecutor:
@@ -173,16 +173,25 @@ class QueryExecutor:
                                     # Use just the column name as the key (standard SQL behavior)
                                     result_key = col_part
                                     # Find value from appropriate table based on alias
-                                    if alias_part == left_alias and col_part in left_row:
-                                        filtered[result_key] = left_row[col_part]
-                                    elif alias_part == right_alias and col_part in right_row:
-                                        filtered[result_key] = right_row[col_part]
-                                    elif col in merged:
-                                        # Fallback: use value from merged dict if available
-                                        filtered[result_key] = merged[col]
+                                    if alias_part == left_alias:
+                                        # Left table column
+                                        if col_part in left_row:
+                                            filtered[result_key] = left_row[col_part]
+                                        elif f"{left_alias}.{col_part}" in merged:
+                                            filtered[result_key] = merged[f"{left_alias}.{col_part}"]
+                                    elif alias_part == right_alias:
+                                        # Right table column
+                                        if col_part in right_row:
+                                            filtered[result_key] = right_row[col_part]
+                                        elif f"{right_alias}.{col_part}" in merged:
+                                            filtered[result_key] = merged[f"{right_alias}.{col_part}"]
+                                    else:
+                                        # Unknown alias - try merged dict
+                                        if col in merged:
+                                            filtered[result_key] = merged[col]
                                 else:
                                     # Non-aliased column name - use as-is
-                                    # Try merged dict first, then individual tables
+                                    # Try merged dict first (has prefixed keys), then individual tables
                                     if col in merged:
                                         filtered[col] = merged[col]
                                     elif col in left_row:

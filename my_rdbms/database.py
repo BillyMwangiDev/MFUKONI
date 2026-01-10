@@ -50,21 +50,28 @@ class Database:
             
         Returns:
             Query result (varies by command type)
+            
+        Raises:
+            PrimaryKeyError: If PRIMARY KEY constraint is violated
+            UniqueConstraintError: If UNIQUE constraint is violated
+            TableError: If table operation fails
+            DatabaseError: For other database errors
         """
-        try:
-            parsed = self.parser.parse(sql)
-            result = self.executor.execute(parsed)
-            
-            # Auto-commit for data modification operations
-            if parsed.get("command") in ("INSERT", "UPDATE", "DELETE", "CREATE_TABLE"):
+        # Parse SQL - let ParseError bubble up
+        parsed = self.parser.parse(sql)
+        
+        # Execute query - let constraint errors (PrimaryKeyError, UniqueConstraintError, TableError) bubble up
+        result = self.executor.execute(parsed)
+        
+        # Auto-commit for data modification operations (only if execution succeeded)
+        if parsed.get("command") in ("INSERT", "UPDATE", "DELETE", "CREATE_TABLE"):
+            try:
                 self.commit()
-            
-            return result
-        except (PrimaryKeyError, UniqueConstraintError, TableError):
-            # Re-raise database constraint errors as-is
-            raise
-        except Exception as e:
-            raise DatabaseError(f"Error executing SQL: {str(e)}")
+            except Exception as e:
+                # Wrap commit errors
+                raise DatabaseError(f"Error committing changes: {str(e)}")
+        
+        return result
 
     def commit(self) -> None:
         """Save all tables to disk."""

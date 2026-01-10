@@ -34,8 +34,10 @@ class ConstraintValidator:
             raise PrimaryKeyError(f"PRIMARY KEY column '{primary_key_col}' cannot be NULL")
         
         for idx, row in enumerate(existing_rows):
+            # Skip the row being updated (exclude_row_index)
             if exclude_row_index is not None and idx == exclude_row_index:
                 continue
+            # Check if primary key value already exists
             if row.get(primary_key_col) == new_value:
                 raise PrimaryKeyError(
                     f"PRIMARY KEY violation: value {new_value} already exists in table '{table_name}'"
