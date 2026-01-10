@@ -57,10 +57,10 @@ def test_validate_input_types():
 
     @validate_input_types(x=int, y=float)
     def test_func(x, y, z):
-        return x + y + z
+        return str(x + y) + z  # x and y are validated, z is not
 
     # Valid types
-    assert test_func(1, 2.0, "test") == "1test"  # z is not validated
+    assert test_func(1, 2.0, "test") == "3.0test"  # z is not validated
 
     # Invalid types
     with pytest.raises(TypeError):
