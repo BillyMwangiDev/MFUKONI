@@ -131,7 +131,8 @@ jobs:
         ls -la mfukoni_web/__init__.py || echo "mfukoni_web/__init__.py not found"
         # Verify Django settings can be imported from project root BEFORE running pytest
         # This prevents pytest-django from crashing during initialization
-        if python -c "import sys; import os; os.environ['PYTHONPATH'] = '${{ github.workspace }}:${{ github.workspace }}/mfukoni_web'; sys.path.insert(0, '${{ github.workspace }}'); sys.path.insert(0, '${{ github.workspace }}/mfukoni_web'); from mfukoni_web.mfukoni_web import settings; print('✓ Django settings imported successfully')"; then
+        # Only add project root to PYTHONPATH (not mfukoni_web subdirectory)
+        if python -c "import sys; import os; os.environ['PYTHONPATH'] = '${{ github.workspace }}'; sys.path.insert(0, '${{ github.workspace }}'); from mfukoni_web.mfukoni_web import settings; print('✓ Django settings imported successfully')"; then
           echo "✓ Django settings import successful - running tests"
           # Verify __init__.py was created successfully
           if [ -f mfukoni_web/__init__.py ]; then
@@ -142,8 +143,8 @@ jobs:
           fi
           # Run Django-dependent tests from project root (required for mfukoni_web.tracker imports)
           # Use --override-ini to set Django settings module and disable auto-detection
-          # Use PYTHONPATH environment variable to ensure imports work
-          PYTHONPATH=${{ github.workspace }}:${{ github.workspace }}/mfukoni_web python -m pytest tests/test_utils.py -v --tb=short --override-ini="DJANGO_SETTINGS_MODULE=mfukoni_web.mfukoni_web.settings" --override-ini="django_find_project=false" || echo "Django tests failed (but continuing)"
+          # Use PYTHONPATH environment variable to ensure imports work (only project root needed)
+          PYTHONPATH=${{ github.workspace }} python -m pytest tests/test_utils.py -v --tb=short --override-ini="DJANGO_SETTINGS_MODULE=mfukoni_web.mfukoni_web.settings" --override-ini="django_find_project=false" || echo "Django tests failed (but continuing)"
         else
           echo "⚠ Django settings import failed - skipping Django tests"
           echo "This is expected if Django is not properly configured in CI"
