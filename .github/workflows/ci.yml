@@ -108,7 +108,7 @@ jobs:
     
     - name: Run Django integration tests
       env:
-        PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/mfukoni_web
+        PYTHONPATH: ${{ github.workspace }}
         DJANGO_SETTINGS_MODULE: mfukoni_web.mfukoni_web.settings
       run: |
         # Ensure __init__.py exists in mfukoni_web/ directory to make it a Python package
@@ -119,8 +119,9 @@ jobs:
         fi
         # Reinstall pytest-django for Django tests (was uninstalled for RDBMS tests)
         pip install pytest-django==4.5.2 || echo "pytest-django installation failed"
-        # Set PYTHONPATH explicitly (env var might not propagate to subprocesses)
-        export PYTHONPATH=${{ github.workspace }}:${{ github.workspace }}/mfukoni_web
+        # Set PYTHONPATH explicitly - only project root is needed
+        # mfukoni_web is a package in the project root, not a separate path
+        export PYTHONPATH=${{ github.workspace }}
         export DJANGO_SETTINGS_MODULE=mfukoni_web.mfukoni_web.settings
         echo "PYTHONPATH: $PYTHONPATH"
         echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
