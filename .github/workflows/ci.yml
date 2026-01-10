@@ -91,17 +91,20 @@ jobs:
         # Ensure pytest-cov is not installed (it adds --no-cov flag)
         pip uninstall -y pytest-cov 2>/dev/null || true
         # Create minimal pytest.ini with NO addopts to avoid any coverage flags
-        cat > pytest.ini << 'EOF'
-[pytest]
-testpaths = tests
-EOF
+        echo "[pytest]" > pytest.ini
+        echo "testpaths = tests" >> pytest.ini
         echo "Running RDBMS-only tests (test_database.py, test_parser.py)..."
         # Run RDBMS-only tests (no Django dependency, no coverage)
         # Pass ALL options explicitly on command line (no addopts in config)
         python -m pytest tests/test_database.py tests/test_parser.py -v --tb=short || true
-        # Clean up temporary pytest.ini and restore original
+        # Restore original pytest.ini before Django tests
         rm -f pytest.ini
-        if [ -f pytest.ini.bak ]; then mv pytest.ini.bak pytest.ini; fi
+        if [ -f pytest.ini.bak ]; then
+          mv pytest.ini.bak pytest.ini
+          echo "✓ pytest.ini restored from backup"
+        else
+          echo "WARNING: pytest.ini.bak not found - Django tests may fail"
+        fi
     
     - name: Run Django integration tests
       env:
