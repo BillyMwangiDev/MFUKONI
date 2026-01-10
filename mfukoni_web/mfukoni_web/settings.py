@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tracker',
+    'mfukoni_web.tracker',  # Use full path to support running from project root
 ]
 
 MIDDLEWARE = [

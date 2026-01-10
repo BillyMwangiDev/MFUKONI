@@ -18,5 +18,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('tracker.urls')),
+    path('', include('mfukoni_web.tracker.urls')),  # Use full path to support running from project root
 ]
