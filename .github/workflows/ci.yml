@@ -88,7 +88,7 @@ jobs:
         fi
         echo "Running RDBMS-only tests (test_database.py, test_parser.py)..."
         # Run RDBMS-only tests (no Django dependency)
-        python -m pytest tests/test_database.py tests/test_parser.py -v --tb=short --no-cov || true
+        python -m pytest tests/test_database.py tests/test_parser.py -v --tb=short || true
         # Restore pytest.ini
         if [ -f pytest.ini.bak ]; then mv pytest.ini.bak pytest.ini; fi
     
