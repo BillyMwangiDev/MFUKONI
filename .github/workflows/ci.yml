@@ -111,7 +111,11 @@ jobs:
       run: |
         pip install pip-audit
         echo "Running pip-audit security scan..."
-        pip-audit --desc || echo "⚠️ Security vulnerabilities found - please review and update dependencies"
+        set +e  # Don't exit on error
+        pip-audit --desc || true
         echo ""
-        echo "NOTE: Django 3.2.25 has known CVEs. Consider upgrading to Django 4.2.26+ (LTS) or 5.1.14+ for security fixes."
+        echo "⚠️ NOTE: Security vulnerabilities found - please review and update dependencies"
+        echo "Django 3.2.25 has known CVEs. Consider upgrading to Django 4.2.26+ (LTS) or 5.1.14+ for security fixes."
         echo "See: https://www.djangoproject.com/weblog/2024/jan/04/security-releases-issued/"
+        echo "✓ Security check completed (continuing despite vulnerabilities)"
+        set -e  # Re-enable exit on error
