@@ -154,8 +154,6 @@ class QueryExecutor:
                     # Prefix left table columns with alias if provided
                     if left_alias:
                         merged.update({f"{left_alias}.{k}": v for k, v in left_row.items()})
-                        # Also include non-prefixed columns for backward compatibility
-                        merged.update(left_row)
                     else:
                         merged.update(left_row)
                     
@@ -168,25 +166,29 @@ class QueryExecutor:
                         if query.get("columns"):
                             filtered = {}
                             for col in query["columns"]:
-                                # Try aliased name first, then non-aliased
+                                col = col.strip()
+                                # Try aliased name first (e.g., "u.name")
                                 if col in merged:
                                     filtered[col] = merged[col]
                                 elif "." in col:
                                     # Column has alias (e.g., "u.name")
                                     alias_part, col_part = col.split(".", 1)
-                                    # Try to find the value by alias.col or just col
+                                    # Check if we have the aliased version
                                     if col in merged:
                                         filtered[col] = merged[col]
-                                    elif col_part in left_row or col_part in right_row:
-                                        # Find value from appropriate table
-                                        if col_part in left_row:
+                                    else:
+                                        # Fallback: find value from appropriate table based on alias
+                                        if alias_part == left_alias and col_part in left_row:
                                             filtered[col] = left_row[col_part]
-                                        else:
+                                        elif alias_part == right_alias and col_part in right_row:
                                             filtered[col] = right_row[col_part]
                                 else:
-                                    # Non-aliased column name
-                                    if col in merged:
-                                        filtered[col] = merged[col]
+                                    # Non-aliased column name - try to find in either table
+                                    # First try left table, then right table
+                                    if col in left_row:
+                                        filtered[col] = left_row[col]
+                                    elif col in right_row:
+                                        filtered[col] = right_row[col]
                             results.append(filtered)
                         else:
                             results.append(merged)
