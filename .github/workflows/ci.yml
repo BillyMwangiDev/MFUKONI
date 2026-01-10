@@ -109,11 +109,16 @@ jobs:
     - name: Run Django integration tests
       env:
         PYTHONPATH: ${{ github.workspace }}/mfukoni_web:${{ github.workspace }}
-        DJANGO_SETTINGS_MODULE: mfukoni_web.mfukoni_web.settings
       run: |
         # Reinstall pytest-django for Django tests (was uninstalled for RDBMS tests)
         pip install pytest-django==4.5.2 || echo "pytest-django installation failed"
-        # Set PYTHONPATH to include both project root (for mfukoni_web.tracker imports) and mfukoni_web directory (for Django)
+        # Create __init__.py in mfukoni_web/ directory to make it a Python package
+        # This allows 'from mfukoni_web.mfukoni_web import settings' to work from project root
+        if [ ! -f mfukoni_web/__init__.py ]; then
+          touch mfukoni_web/__init__.py
+          echo "Created mfukoni_web/__init__.py"
+        fi
+        # Set PYTHONPATH to include both project root and mfukoni_web directory
         export PYTHONPATH=${{ github.workspace }}/mfukoni_web:${{ github.workspace }}:$PYTHONPATH
         export DJANGO_SETTINGS_MODULE=mfukoni_web.mfukoni_web.settings
         echo "PYTHONPATH: $PYTHONPATH"
@@ -122,6 +127,7 @@ jobs:
         echo "Checking Django project structure..."
         ls -la mfukoni_web/manage.py || echo "manage.py not found"
         ls -la mfukoni_web/mfukoni_web/settings.py || echo "settings.py not found"
+        ls -la mfukoni_web/__init__.py || echo "mfukoni_web/__init__.py not found"
         # Verify Django settings can be imported from project root
         # The settings module is 'mfukoni_web.mfukoni_web.settings' when running from project root
         python -c "import sys; sys.path.insert(0, '${{ github.workspace }}/mfukoni_web'); sys.path.insert(0, '${{ github.workspace }}'); from mfukoni_web.mfukoni_web import settings; print('✓ Django settings imported successfully')" || echo "⚠ Django settings import failed - tests may skip"
