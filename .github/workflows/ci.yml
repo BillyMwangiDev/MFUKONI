@@ -142,8 +142,8 @@ jobs:
           fi
           # Run Django-dependent tests from project root (required for mfukoni_web.tracker imports)
           # Use --override-ini to set Django settings module and disable auto-detection
-          # Skip if fails - not critical for CI
-          python -m pytest tests/test_utils.py -v --tb=short --override-ini="DJANGO_SETTINGS_MODULE=mfukoni_web.mfukoni_web.settings" --override-ini="django_find_project=false" || echo "Django tests failed (but continuing)"
+          # Use PYTHONPATH environment variable to ensure imports work
+          PYTHONPATH=${{ github.workspace }}:${{ github.workspace }}/mfukoni_web python -m pytest tests/test_utils.py -v --tb=short --override-ini="DJANGO_SETTINGS_MODULE=mfukoni_web.mfukoni_web.settings" --override-ini="django_find_project=false" || echo "Django tests failed (but continuing)"
         else
           echo "⚠ Django settings import failed - skipping Django tests"
           echo "This is expected if Django is not properly configured in CI"
