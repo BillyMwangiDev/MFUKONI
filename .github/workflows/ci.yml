@@ -22,11 +22,13 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     
-    - name: Install dependencies
+    - name: Install dependencies (without pytest-django)
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
+        # Install dependencies excluding pytest-django to prevent Django auto-loading
+        pip install Django==3.2.25 python-decouple==3.8 pytest==7.4.4 black>=23.0.0 flake8>=6.1.0 reportlab>=4.4.3 openpyxl>=3.1.3
+        # Explicitly ensure pytest-django is NOT installed
+        pip uninstall -y pytest-django 2>/dev/null || echo "pytest-django already removed"
     
     - name: Run linter
       run: |
@@ -53,13 +55,12 @@ jobs:
     
     - name: Run RDBMS tests (no Django)
       run: |
-        # Run core RDBMS tests that don't require Django
-        # Uninstall pytest-django to prevent Django loading errors
-        pip uninstall -y pytest-django || echo "pytest-django not installed or already removed"
+        # Verify pytest-django is not installed
+        pip show pytest-django || echo "pytest-django not installed (good)"
         # Temporarily rename pytest.ini to prevent any Django config from being loaded
         if [ -f pytest.ini ]; then mv pytest.ini pytest.ini.bak; fi
-        # Run tests without Django
-        pytest tests/test_database.py tests/test_parser.py -v || true
+        # Run RDBMS-only tests (no Django dependency)
+        python -m pytest tests/test_database.py tests/test_parser.py -v --tb=short
         # Restore pytest.ini
         if [ -f pytest.ini.bak ]; then mv pytest.ini.bak pytest.ini; fi
     
