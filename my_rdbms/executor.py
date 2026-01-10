@@ -167,25 +167,25 @@ class QueryExecutor:
                             filtered = {}
                             for col in query["columns"]:
                                 col = col.strip()
-                                # Try aliased name first (e.g., "u.name")
-                                if col in merged:
-                                    filtered[col] = merged[col]
-                                elif "." in col:
-                                    # Column has alias (e.g., "u.name")
+                                if "." in col:
+                                    # Column has alias (e.g., "u.name" or "o.product")
                                     alias_part, col_part = col.split(".", 1)
-                                    # Check if we have the aliased version
+                                    # Use just the column name as the key (standard SQL behavior)
+                                    result_key = col_part
+                                    # Find value from appropriate table based on alias
+                                    if alias_part == left_alias and col_part in left_row:
+                                        filtered[result_key] = left_row[col_part]
+                                    elif alias_part == right_alias and col_part in right_row:
+                                        filtered[result_key] = right_row[col_part]
+                                    elif col in merged:
+                                        # Fallback: use value from merged dict if available
+                                        filtered[result_key] = merged[col]
+                                else:
+                                    # Non-aliased column name - use as-is
+                                    # Try merged dict first, then individual tables
                                     if col in merged:
                                         filtered[col] = merged[col]
-                                    else:
-                                        # Fallback: find value from appropriate table based on alias
-                                        if alias_part == left_alias and col_part in left_row:
-                                            filtered[col] = left_row[col_part]
-                                        elif alias_part == right_alias and col_part in right_row:
-                                            filtered[col] = right_row[col_part]
-                                else:
-                                    # Non-aliased column name - try to find in either table
-                                    # First try left table, then right table
-                                    if col in left_row:
+                                    elif col in left_row:
                                         filtered[col] = left_row[col]
                                     elif col in right_row:
                                         filtered[col] = right_row[col]
