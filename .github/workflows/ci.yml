@@ -86,11 +86,21 @@ jobs:
           echo "ERROR: pytest.ini still exists!"
           exit 1
         fi
+        # Clear pytest cache to prevent stale configuration
+        rm -rf .pytest_cache __pycache__ tests/__pycache__ my_rdbms/__pycache__ 2>/dev/null || true
+        # Ensure pytest-cov is not installed (it adds --no-cov flag)
+        pip uninstall -y pytest-cov 2>/dev/null || true
+        # Create minimal pytest.ini with NO addopts to avoid any coverage flags
+        cat > pytest.ini << 'EOF'
+[pytest]
+testpaths = tests
+EOF
         echo "Running RDBMS-only tests (test_database.py, test_parser.py)..."
         # Run RDBMS-only tests (no Django dependency, no coverage)
-        # Explicitly clear any addopts that might include --no-cov
-        python -m pytest tests/test_database.py tests/test_parser.py -v --tb=short --override-ini=addopts= || true
-        # Restore pytest.ini
+        # Pass ALL options explicitly on command line (no addopts in config)
+        python -m pytest tests/test_database.py tests/test_parser.py -v --tb=short || true
+        # Clean up temporary pytest.ini and restore original
+        rm -f pytest.ini
         if [ -f pytest.ini.bak ]; then mv pytest.ini.bak pytest.ini; fi
     
     - name: Run Django integration tests
