@@ -113,10 +113,15 @@ jobs:
       run: |
         # Ensure __init__.py exists in mfukoni_web/ directory to make it a Python package
         # This allows 'from mfukoni_web.mfukoni_web import settings' to work from project root
+        # The file should already exist (committed), but create it if missing as a safety check
         if [ ! -f mfukoni_web/__init__.py ]; then
-          touch mfukoni_web/__init__.py
+          echo "# Mfukoni web application package" > mfukoni_web/__init__.py
           echo "Created mfukoni_web/__init__.py"
+        else
+          echo "✓ mfukoni_web/__init__.py already exists (from repository)"
         fi
+        # Verify the file was created/updated
+        cat mfukoni_web/__init__.py || echo "WARNING: Could not read mfukoni_web/__init__.py"
         # Reinstall pytest-django for Django tests (was uninstalled for RDBMS tests)
         pip install pytest-django==4.5.2 || echo "pytest-django installation failed"
         # Set PYTHONPATH explicitly - only project root is needed
