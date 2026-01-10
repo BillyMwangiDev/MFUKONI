@@ -7,7 +7,7 @@ from my_rdbms.table import Table
 from my_rdbms.parser import SQLParser
 from my_rdbms.executor import QueryExecutor
 from my_rdbms.storage import Storage
-from my_rdbms.exceptions import DatabaseError
+from my_rdbms.exceptions import DatabaseError, PrimaryKeyError, UniqueConstraintError, TableError
 
 
 class Database:
@@ -60,6 +60,9 @@ class Database:
                 self.commit()
             
             return result
+        except (PrimaryKeyError, UniqueConstraintError, TableError):
+            # Re-raise database constraint errors as-is
+            raise
         except Exception as e:
             raise DatabaseError(f"Error executing SQL: {str(e)}")
 

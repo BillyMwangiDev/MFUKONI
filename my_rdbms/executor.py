@@ -134,6 +134,10 @@ class QueryExecutor:
         left_col = join_info["on"]["left"].split(".")[1]  # table.col -> col
         right_col = join_info["on"]["right"].split(".")[1]
         
+        # Get aliases for column prefixing
+        left_alias = join_info.get("left_alias")  # Left table alias (e.g., "u")
+        right_alias = join_info["alias"]  # Right table alias (e.g., "o")
+        
         # Perform INNER JOIN
         results = []
         for left_row in left_table.rows:
@@ -145,15 +149,44 @@ class QueryExecutor:
             for right_row in right_table.rows:
                 right_value = right_row.get(right_col)
                 if left_value == right_value:
-                    # Merge rows
-                    merged = left_row.copy()
-                    merged.update({f"{join_info['alias']}.{k}": v for k, v in right_row.items()})
+                    # Merge rows with proper alias prefixing
+                    merged = {}
+                    # Prefix left table columns with alias if provided
+                    if left_alias:
+                        merged.update({f"{left_alias}.{k}": v for k, v in left_row.items()})
+                        # Also include non-prefixed columns for backward compatibility
+                        merged.update(left_row)
+                    else:
+                        merged.update(left_row)
+                    
+                    # Prefix right table columns with alias
+                    merged.update({f"{right_alias}.{k}": v for k, v in right_row.items()})
                     
                     # Apply WHERE clause if present
                     if where_func is None or where_func(merged):
-                        # Select columns
+                        # Select columns - handle both aliased (u.name) and non-aliased (name) column names
                         if query.get("columns"):
-                            filtered = {col: merged.get(col) for col in query["columns"]}
+                            filtered = {}
+                            for col in query["columns"]:
+                                # Try aliased name first, then non-aliased
+                                if col in merged:
+                                    filtered[col] = merged[col]
+                                elif "." in col:
+                                    # Column has alias (e.g., "u.name")
+                                    alias_part, col_part = col.split(".", 1)
+                                    # Try to find the value by alias.col or just col
+                                    if col in merged:
+                                        filtered[col] = merged[col]
+                                    elif col_part in left_row or col_part in right_row:
+                                        # Find value from appropriate table
+                                        if col_part in left_row:
+                                            filtered[col] = left_row[col_part]
+                                        else:
+                                            filtered[col] = right_row[col_part]
+                                else:
+                                    # Non-aliased column name
+                                    if col in merged:
+                                        filtered[col] = merged[col]
                             results.append(filtered)
                         else:
                             results.append(merged)

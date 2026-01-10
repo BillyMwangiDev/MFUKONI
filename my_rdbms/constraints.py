@@ -14,7 +14,8 @@ class ConstraintValidator:
         table_name: str,
         primary_key_col: str,
         new_value: Any,
-        existing_rows: List[Dict[str, Any]]
+        existing_rows: List[Dict[str, Any]],
+        exclude_row_index: Optional[int] = None
     ) -> None:
         """
         Validate PRIMARY KEY constraint.
@@ -24,6 +25,7 @@ class ConstraintValidator:
             primary_key_col: Name of the primary key column
             new_value: The new primary key value
             existing_rows: Existing rows in the table
+            exclude_row_index: Index of row to exclude (for UPDATE operations)
             
         Raises:
             PrimaryKeyError: If primary key already exists
@@ -31,7 +33,9 @@ class ConstraintValidator:
         if new_value is None:
             raise PrimaryKeyError(f"PRIMARY KEY column '{primary_key_col}' cannot be NULL")
         
-        for row in existing_rows:
+        for idx, row in enumerate(existing_rows):
+            if exclude_row_index is not None and idx == exclude_row_index:
+                continue
             if row.get(primary_key_col) == new_value:
                 raise PrimaryKeyError(
                     f"PRIMARY KEY violation: value {new_value} already exists in table '{table_name}'"
@@ -97,7 +101,7 @@ class ConstraintValidator:
         # Validate PRIMARY KEY
         if primary_key:
             ConstraintValidator.validate_primary_key(
-                table_name, primary_key, new_row.get(primary_key), existing_rows
+                table_name, primary_key, new_row.get(primary_key), existing_rows, exclude_row_index
             )
         
         # Validate UNIQUE constraints

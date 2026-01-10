@@ -119,13 +119,15 @@ class SQLParser:
     @staticmethod
     def _parse_select(sql: str) -> Dict[str, Any]:
         """Parse SELECT statement."""
-        # Pattern: SELECT cols FROM table [WHERE condition] [JOIN ...]
-        select_match = re.search(r"SELECT\s+(.*?)\s+FROM\s+(\w+)", sql, re.IGNORECASE)
+        # Pattern: SELECT cols FROM table [alias] [WHERE condition] [JOIN ...]
+        # Support: FROM table or FROM table alias
+        select_match = re.search(r"SELECT\s+(.*?)\s+FROM\s+(\w+)(?:\s+(\w+))?", sql, re.IGNORECASE)
         if not select_match:
             raise ParseError("Invalid SELECT syntax")
         
         columns_str = select_match.group(1).strip()
         table_name = select_match.group(2)
+        left_alias = select_match.group(3)  # Left table alias (e.g., "u" in "FROM users u")
         
         # Parse columns
         if columns_str == "*":
@@ -153,12 +155,14 @@ class SQLParser:
             join_info = {
                 "table": join_table,
                 "alias": join_alias,
+                "left_alias": left_alias,  # Left table alias for column prefixing
                 "on": {"left": left_col, "right": right_col}
             }
         
         return {
             "command": "SELECT",
             "table_name": table_name,
+            "table_alias": left_alias,  # Store left table alias
             "columns": columns,
             "where": where_clause,
             "join": join_info
