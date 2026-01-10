@@ -174,15 +174,17 @@ class QueryExecutor:
                                     result_key = col_part
                                     # Find value from appropriate table based on alias
                                     value_found = False
-                                    if alias_part == left_alias:
+                                    # Check left table first
+                                    if left_alias and alias_part == left_alias:
                                         # Left table column
                                         if col_part in left_row:
                                             filtered[result_key] = left_row[col_part]
                                             value_found = True
-                                        elif left_alias and f"{left_alias}.{col_part}" in merged:
+                                        elif f"{left_alias}.{col_part}" in merged:
                                             filtered[result_key] = merged[f"{left_alias}.{col_part}"]
                                             value_found = True
-                                    elif alias_part == right_alias:
+                                    # Check right table
+                                    elif right_alias and alias_part == right_alias:
                                         # Right table column
                                         if col_part in right_row:
                                             filtered[result_key] = right_row[col_part]
@@ -191,9 +193,17 @@ class QueryExecutor:
                                             filtered[result_key] = merged[f"{right_alias}.{col_part}"]
                                             value_found = True
                                     
-                                    # Fallback: try merged dict with full column name
+                                    # Fallback: try merged dict with full column name (e.g., "u.name")
                                     if not value_found and col in merged:
                                         filtered[result_key] = merged[col]
+                                        value_found = True
+                                    
+                                    # Last resort: try to find by column name in either table
+                                    if not value_found:
+                                        if col_part in left_row:
+                                            filtered[result_key] = left_row[col_part]
+                                        elif col_part in right_row:
+                                            filtered[result_key] = right_row[col_part]
                                 else:
                                     # Non-aliased column name - use as-is
                                     # Try merged dict first (has prefixed keys), then individual tables
