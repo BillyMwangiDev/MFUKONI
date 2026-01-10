@@ -156,12 +156,15 @@ Django password validators configured:
 ### Ongoing Security:
 
 - [x] Regular dependency updates (`pip list --outdated`) - **Last checked: January 10, 2026**
-  - **Core Project Dependencies (in requirements.txt):** ✅ All up to date
-    - Django 3.2.25 (latest for Python 3.7)
-    - python-decouple 3.8
-    - reportlab 4.4.3 (upgraded from 3.6.13)
-    - openpyxl 3.1.3
-    - pytest 7.4.4, pytest-django 4.5.2
+  - **Core Project Dependencies (in requirements.txt):**
+    - Django 3.2.25 (⚠️ **Security Notice:** Known CVEs - consider upgrading to 4.2.26+)
+      - CVE-2024-45231, CVE-2025-48432, CVE-2025-57833, CVE-2025-64458, CVE-2025-64459
+      - **Recommended:** Upgrade to Django 4.2.26 (LTS) or 5.1.14+ for Python 3.11+
+      - Django 4.2 requires Python 3.10+, Django 5.1+ requires Python 3.11+
+    - python-decouple 3.8 ✅
+    - reportlab 4.4.3 ✅
+    - openpyxl 3.1.3 ✅
+    - pytest 7.4.4, pytest-django 4.5.2 ✅
   - **Note:** Outdated packages (celery, billiard) are not part of this project's requirements and cannot be upgraded due to Python 3.7 compatibility constraints (celery 5.3.0 requires Python 3.8+)
 - [ ] Security vulnerability scanning
 - [ ] Regular backups of `data/` directory

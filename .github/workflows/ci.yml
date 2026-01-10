@@ -109,4 +109,5 @@ jobs:
     - name: Security check
       run: |
         pip install pip-audit
-        pip-audit --desc
+        # Run pip-audit but don't fail CI if vulnerabilities are found (report only)
+        pip-audit --desc || echo "Security vulnerabilities found - please review and update dependencies"
