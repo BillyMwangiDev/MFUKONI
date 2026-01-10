@@ -16,7 +16,7 @@ class Database:
     def __init__(self, db_path: str = "data/mfukoni.db"):
         """
         Initialize database.
-        
+
         Args:
             db_path: Path to database directory
         """
@@ -37,20 +37,20 @@ class Database:
                 if rows:
                     table.load_rows(rows)
                 self.tables[table_name] = table
-        
+
         # Initialize executor with loaded tables
         self.executor = QueryExecutor(self.tables)
 
     def execute(self, sql: str) -> Any:
         """
         Execute a SQL statement.
-        
+
         Args:
             sql: SQL statement string
-            
+
         Returns:
             Query result (varies by command type)
-            
+
         Raises:
             PrimaryKeyError: If PRIMARY KEY constraint is violated
             UniqueConstraintError: If UNIQUE constraint is violated
@@ -59,10 +59,10 @@ class Database:
         """
         # Parse SQL - let ParseError bubble up
         parsed = self.parser.parse(sql)
-        
+
         # Execute query - let constraint errors (PrimaryKeyError, UniqueConstraintError, TableError) bubble up
         result = self.executor.execute(parsed)
-        
+
         # Auto-commit for data modification operations (only if execution succeeded)
         if parsed.get("command") in ("INSERT", "UPDATE", "DELETE", "CREATE_TABLE"):
             try:
@@ -70,7 +70,7 @@ class Database:
             except Exception as e:
                 # Wrap commit errors
                 raise DatabaseError(f"Error committing changes: {str(e)}")
-        
+
         return result
 
     def commit(self) -> None:

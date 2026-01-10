@@ -14,7 +14,7 @@ class REPL:
     def __init__(self, db_path: str = "data/mfukoni.db"):
         """
         Initialize REPL.
-        
+
         Args:
             db_path: Path to database
         """
@@ -30,26 +30,26 @@ class REPL:
         print("Type '.exit' or '.quit' to exit")
         print("=" * 60)
         print()
-        
+
         while self.running:
             try:
                 line = input("mfukoni> ").strip()
-                
+
                 if not line:
                     continue
-                
+
                 # Handle meta commands
                 if line.startswith("."):
                     self._handle_meta_command(line)
                     continue
-                
+
                 # Handle multi-line SQL
                 sql = line
                 while sql.endswith("\\"):
                     sql = sql[:-1] + " "
                     next_line = input("...> ").strip()
                     sql += next_line
-                
+
                 # Execute SQL
                 try:
                     result = self.db.execute(sql)
@@ -58,7 +58,7 @@ class REPL:
                     print(f"ERROR: {e}")
                 except Exception as e:
                     print(f"ERROR: {e}")
-                
+
             except EOFError:
                 print("\nExiting...")
                 break
@@ -70,7 +70,7 @@ class REPL:
         """Handle meta commands (starting with .)."""
         parts = command.split()
         cmd = parts[0].lower()
-        
+
         if cmd == ".help":
             self._print_help()
         elif cmd == ".exit" or cmd == ".quit":
@@ -120,7 +120,7 @@ class REPL:
         if not table:
             print(f"Table '{table_name}' does not exist.")
             return
-        
+
         schema = table.get_schema()
         print(f"\nSchema for '{table_name}':")
         print("  Columns:")
@@ -160,26 +160,26 @@ class REPL:
         """Print rows in a formatted table."""
         if not rows:
             return
-        
+
         # Get all column names
         columns = list(rows[0].keys())
-        
+
         # Calculate column widths
         widths = {col: len(str(col)) for col in columns}
         for row in rows:
             for col in columns:
                 widths[col] = max(widths[col], len(str(row.get(col, ""))))
-        
+
         # Print header
         header = " | ".join(str(col).ljust(widths[col]) for col in columns)
         print(header)
         print("-" * len(header))
-        
+
         # Print rows
         for row in rows:
             values = [str(row.get(col, "")).ljust(widths[col]) for col in columns]
             print(" | ".join(values))
-        
+
         print(f"\n({len(rows)} row(s))")
 
 

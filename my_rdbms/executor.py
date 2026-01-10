@@ -14,7 +14,7 @@ class QueryExecutor:
     def __init__(self, tables: Dict[str, Table]):
         """
         Initialize executor with table dictionary.
-        
+
         Args:
             tables: Dictionary of table_name -> Table objects
         """
@@ -23,15 +23,15 @@ class QueryExecutor:
     def execute(self, parsed_query: Dict[str, Any]) -> Any:
         """
         Execute a parsed query.
-        
+
         Args:
             parsed_query: Parsed query dictionary
-            
+
         Returns:
             Query result (varies by command type)
         """
         command = parsed_query.get("command")
-        
+
         if command == "CREATE_TABLE":
             return self._execute_create_table(parsed_query)
         elif command == "INSERT":
@@ -50,13 +50,13 @@ class QueryExecutor:
         table_name = query["table_name"]
         if table_name in self.tables:
             raise TableError(f"Table '{table_name}' already exists")
-        
+
         schema = {
             "columns": query["columns"],
             "primary_key": query.get("primary_key"),
-            "unique": query.get("unique", [])
+            "unique": query.get("unique", []),
         }
-        
+
         table = Table(table_name, schema)
         self.tables[table_name] = table
 
@@ -64,11 +64,11 @@ class QueryExecutor:
         """Execute INSERT command."""
         table_name = query["table_name"]
         table = self._get_table(table_name)
-        
+
         # Get column names from schema
         columns = list(table.schema["columns"].keys())
         values = query["values"]
-        
+
         # Create row dictionary
         row = {}
         for i, col in enumerate(columns):
@@ -81,23 +81,23 @@ class QueryExecutor:
                     row[col] = val
             else:
                 row[col] = None
-        
+
         table.insert(row)
 
     def _execute_select(self, query: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Execute SELECT command."""
         table_name = query["table_name"]
         table = self._get_table(table_name)
-        
+
         # Build WHERE function
         where_func = None
         if query.get("where"):
             where_func = self._build_where_function(query["where"], table_name)
-        
+
         # Handle JOIN
         if query.get("join"):
             return self._execute_join(query, table, where_func)
-        
+
         # Regular SELECT
         return table.select(columns=query.get("columns"), where=where_func)
 
@@ -105,46 +105,48 @@ class QueryExecutor:
         """Execute UPDATE command."""
         table_name = query["table_name"]
         table = self._get_table(table_name)
-        
+
         updates = query["updates"]
         where_func = None
         if query.get("where"):
             where_func = self._build_where_function(query["where"], table_name)
-        
+
         return table.update(updates, where=where_func)
 
     def _execute_delete(self, query: Dict[str, Any]) -> int:
         """Execute DELETE command."""
         table_name = query["table_name"]
         table = self._get_table(table_name)
-        
+
         where_func = None
         if query.get("where"):
             where_func = self._build_where_function(query["where"], table_name)
-        
+
         return table.delete(where=where_func)
 
-    def _execute_join(self, query: Dict[str, Any], left_table: Table, where_func: Optional[Callable]) -> List[Dict[str, Any]]:
+    def _execute_join(
+        self, query: Dict[str, Any], left_table: Table, where_func: Optional[Callable]
+    ) -> List[Dict[str, Any]]:
         """Execute JOIN operation."""
         join_info = query["join"]
         right_table_name = join_info["table"]
         right_table = self._get_table(right_table_name)
-        
+
         # Parse join condition
         left_col = join_info["on"]["left"].split(".")[1]  # table.col -> col
         right_col = join_info["on"]["right"].split(".")[1]
-        
+
         # Get aliases for column prefixing
         left_alias = join_info.get("left_alias")  # Left table alias (e.g., "u")
         right_alias = join_info["alias"]  # Right table alias (e.g., "o")
-        
+
         # Perform INNER JOIN
         results = []
         for left_row in left_table.rows:
             left_value = left_row.get(left_col)
             if left_value is None:
                 continue
-            
+
             # Find matching rows in right table
             for right_row in right_table.rows:
                 right_value = right_row.get(right_col)
@@ -156,10 +158,10 @@ class QueryExecutor:
                         merged.update({f"{left_alias}.{k}": v for k, v in left_row.items()})
                     else:
                         merged.update(left_row)
-                    
+
                     # Prefix right table columns with alias
                     merged.update({f"{right_alias}.{k}": v for k, v in right_row.items()})
-                    
+
                     # Apply WHERE clause if present
                     if where_func is None or where_func(merged):
                         # Select columns - handle both aliased (u.name) and non-aliased (name) column names
@@ -181,7 +183,9 @@ class QueryExecutor:
                                             filtered[result_key] = left_row[col_part]
                                             value_found = True
                                         elif f"{left_alias}.{col_part}" in merged:
-                                            filtered[result_key] = merged[f"{left_alias}.{col_part}"]
+                                            filtered[result_key] = merged[
+                                                f"{left_alias}.{col_part}"
+                                            ]
                                             value_found = True
                                     # Check right table
                                     elif right_alias and alias_part == right_alias:
@@ -190,14 +194,16 @@ class QueryExecutor:
                                             filtered[result_key] = right_row[col_part]
                                             value_found = True
                                         elif f"{right_alias}.{col_part}" in merged:
-                                            filtered[result_key] = merged[f"{right_alias}.{col_part}"]
+                                            filtered[result_key] = merged[
+                                                f"{right_alias}.{col_part}"
+                                            ]
                                             value_found = True
-                                    
+
                                     # Fallback: try merged dict with full column name (e.g., "u.name")
                                     if not value_found and col in merged:
                                         filtered[result_key] = merged[col]
                                         value_found = True
-                                    
+
                                     # Last resort: try to find by column name in either table
                                     if not value_found:
                                         if col_part in left_row:
@@ -216,17 +222,19 @@ class QueryExecutor:
                             results.append(filtered)
                         else:
                             results.append(merged)
-        
+
         return results
 
-    def _build_where_function(self, where_clause: str, table_name: str) -> Callable[[Dict[str, Any]], bool]:
+    def _build_where_function(
+        self, where_clause: str, table_name: str
+    ) -> Callable[[Dict[str, Any]], bool]:
         """
         Build a WHERE function from a WHERE clause string.
-        
+
         Args:
             where_clause: WHERE clause string (e.g., "amount > 100")
             table_name: Name of the table
-            
+
         Returns:
             Function that returns True if row matches condition
         """
@@ -240,9 +248,9 @@ class QueryExecutor:
             ">": operator.gt,
             "<": operator.lt,
         }
-        
+
         where_clause = where_clause.strip()
-        
+
         # Find operator
         op_func = None
         op_str = None
@@ -251,25 +259,26 @@ class QueryExecutor:
                 op_func = operators[op]
                 op_str = op
                 break
-        
+
         if op_func is None:
             raise ParseError(f"Unsupported operator in WHERE clause: {where_clause}")
-        
+
         # Split into column and value
         parts = where_clause.split(op_str, 1)
         col_name = parts[0].strip()
         value_str = parts[1].strip()
-        
+
         # Parse value
         from my_rdbms.parser import SQLParser
+
         value = SQLParser._parse_value(value_str)
-        
+
         def where_func(row: Dict[str, Any]) -> bool:
             row_value = row.get(col_name)
             if row_value is None:
                 return False
             return op_func(row_value, value)
-        
+
         return where_func
 
     def _get_table(self, table_name: str) -> Table:

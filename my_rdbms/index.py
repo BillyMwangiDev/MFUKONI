@@ -12,7 +12,7 @@ class HashIndex:
     def __init__(self, column_name: str):
         """
         Initialize a hash index.
-        
+
         Args:
             column_name: Name of the column to index
         """
@@ -22,7 +22,7 @@ class HashIndex:
     def build(self, rows: List[Dict[str, Any]]) -> None:
         """
         Build index from rows.
-        
+
         Args:
             rows: List of row dictionaries
         """
@@ -35,7 +35,7 @@ class HashIndex:
     def add(self, value: Any, row_index: int) -> None:
         """
         Add a value to the index.
-        
+
         Args:
             value: The indexed value
             row_index: Index of the row
@@ -46,7 +46,7 @@ class HashIndex:
     def remove(self, value: Any, row_index: int) -> None:
         """
         Remove a value from the index.
-        
+
         Args:
             value: The indexed value
             row_index: Index of the row
@@ -59,7 +59,7 @@ class HashIndex:
     def update(self, old_value: Any, new_value: Any, row_index: int) -> None:
         """
         Update index when a value changes.
-        
+
         Args:
             old_value: The old value
             new_value: The new value
@@ -71,10 +71,10 @@ class HashIndex:
     def find(self, value: Any) -> Set[int]:
         """
         Find row indices matching a value.
-        
+
         Args:
             value: The value to search for
-            
+
         Returns:
             Set of row indices
         """
@@ -95,10 +95,10 @@ class IndexManager:
     def create_index(self, column_name: str) -> HashIndex:
         """
         Create a new index on a column.
-        
+
         Args:
             column_name: Name of the column to index
-            
+
         Returns:
             The created HashIndex
         """
@@ -109,10 +109,10 @@ class IndexManager:
     def get_index(self, column_name: str) -> Optional[HashIndex]:
         """
         Get an index for a column.
-        
+
         Args:
             column_name: Name of the column
-            
+
         Returns:
             HashIndex if exists, None otherwise
         """
@@ -125,7 +125,7 @@ class IndexManager:
     def rebuild_all(self, rows: List[Dict[str, Any]]) -> None:
         """
         Rebuild all indexes from rows.
-        
+
         Args:
             rows: List of row dictionaries
         """
