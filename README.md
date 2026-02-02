@@ -66,7 +66,7 @@
 
 ## 🚀 Quick Start (Docker – Recommended)
 
-
+```bash
 # 1. Clone
 git clone https://github.com/BillyMwangiDev/MFUKONI.git
 cd MFUKONI
@@ -116,7 +116,7 @@ Challenge Requirements SummaryAll Pesapal Developer Challenge 2026 requirements 
 Web app using custom DB (no Django ORM)
 Comprehensive documentation & tests
 
-Detailed fulfillment → see sections below or CHALLENGE_REQUIREMENTS_CONFIRMED.md(You can keep or collapse the very long requirements/analysis/design sections here if you want to keep them — many professional repos move deep technical docs to /docs/ folder and link to them.)
+Detailed fulfillment → see sections below or CHALLENGE_REQUIREMENTS_CONFIRMED.md
 ContributingFork & clone
 Create feature branch (git checkout -b feature/add-export-pdf)
 Commit & push
