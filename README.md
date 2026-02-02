@@ -66,7 +66,20 @@
 
 ## 🚀 Quick Start (Docker – Recommended)
 
-```bash
+
+# 1. Clone
+git clone https://github.com/BillyMwangiDev/MFUKONI.git
+cd MFUKONI
+
+# 2. Start (builds & runs in background)
+docker-compose up -d
+
+# 3. Open in browser
+# → http://localhost:8000
+
+
+Data persists in ./data/. Stop with docker-compose down.
+
  Table of ContentsFeatures (#-features)
 Screenshots (#-screenshots--demo) ← add your images here
 Installation & Setup (#installation--setup)
@@ -103,8 +116,7 @@ Challenge Requirements SummaryAll Pesapal Developer Challenge 2026 requirements 
 Web app using custom DB (no Django ORM)
 Comprehensive documentation & tests
 
-Detailed fulfillment → see sections below or CHALLENGE_REQUIREMENTS_CONFIRMED.md
-
+Detailed fulfillment → see sections below or CHALLENGE_REQUIREMENTS_CONFIRMED.md(You can keep or collapse the very long requirements/analysis/design sections here if you want to keep them — many professional repos move deep technical docs to /docs/ folder and link to them.)
 ContributingFork & clone
 Create feature branch (git checkout -b feature/add-export-pdf)
 Commit & push
@@ -113,12 +125,6 @@ Open Pull Request
 Please follow PEP 8 + type hints. Run black . before committing.
 LicenseMIT License — see LICENSEBuilt with   • Last updated February 2026Questions? → Open an issue or reach out on X @MwangiBillyG
 
-# 1. Clone
-git clone https://github.com/BillyMwangiDev/MFUKONI.git
-cd MFUKONI
 
-# 2. Start (builds & runs in background)
-docker-compose up -d
 
-# 3. Open in browser
-# → http://localhost:8000
+
